@@ -69,8 +69,8 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
 }
 
 app.frame('/', () => {
-  const gifUrl = 'https://example.com/ham-token.gif' // Replace with actual GIF URL
-  const baseUrl = 'https://your-app-url.com' // Replace with your app's base URL
+  const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF' // Replace with actual GIF URL
+  const baseUrl = 'https://hamtipstats.vercel.app/api' // Replace with your app's base URL
 
   const html = `
     <!DOCTYPE html>
