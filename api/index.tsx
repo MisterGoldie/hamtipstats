@@ -209,6 +209,46 @@ app.frame('/check', async (c) => {
               <span>Percent Tipped:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
             </div>
+            
+            {/* New white meter */}
+            <div style={{
+              width: '100%',
+              height: '30px',
+              backgroundColor: 'rgba(255,255,255,0.3)',
+              borderRadius: '15px',
+              overflow: 'hidden',
+              marginTop: '20px',
+              position: 'relative',
+            }}>
+              <div style={{
+                width: `${percentTipped}%`,
+                height: '100%',
+                backgroundColor: 'white',
+                borderRadius: '15px',
+              }} />
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '10px',
+                transform: 'translateY(-50%)',
+                color: 'black',
+                fontSize: '16px',
+                fontWeight: 'bold',
+              }}>
+                0%
+              </div>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                right: '10px',
+                transform: 'translateY(-50%)',
+                color: 'black',
+                fontSize: '16px',
+                fontWeight: 'bold',
+              }}>
+                100%
+              </div>
+            </div>
           </div>
           
           <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
@@ -248,6 +288,8 @@ app.frame('/check', async (c) => {
     });
   }
 });
+
+// The code stops here, before the /share frame
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
@@ -350,6 +392,47 @@ app.frame('/share', async (c) => {
                 <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
               </div>
             </div>
+            
+            {/* New white meter */}
+            <div style={{
+              width: '100%',
+              height: '30px',
+              backgroundColor: 'rgba(255,255,255,0.3)',
+              borderRadius: '15px',
+              overflow: 'hidden',
+              marginTop: '20px',
+              position: 'relative',
+            }}>
+              <div style={{
+                width: `${percentTipped}%`,
+                height: '100%',
+                backgroundColor: 'white',
+                borderRadius: '15px',
+              }} />
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '10px',
+                transform: 'translateY(-50%)',
+                color: 'black',
+                fontSize: '16px',
+                fontWeight: 'bold',
+              }}>
+                0%
+              </div>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                right: '10px',
+                transform: 'translateY(-50%)',
+                color: 'black',
+                fontSize: '16px',
+                fontWeight: 'bold',
+              }}>
+                100%
+              </div>
+            </div>
+            
             <div style={{fontSize: '24px', marginTop: 'auto', textAlign: 'center'}}>
               Check your $HAM stats with the $HAM Token Tracker!
             </div>
