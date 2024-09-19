@@ -133,7 +133,6 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div>Unable to retrieve user information: No FID provided</div>
         </div>
@@ -175,12 +174,11 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px', textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>@{username}</span>
-              <span style={{fontSize: '30px', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>FID: {userFid} | Rank: {rank}</span>
+              <span style={{fontSize: '80px'}}>@{username}</span>
+              <span style={{fontSize: '30px'}}>FID: {userFid} | Rank: {rank}</span>
             </div>
           </div>
           
@@ -237,7 +235,6 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div>Error retrieving $HAM stats</div>
         </div>
@@ -266,7 +263,6 @@ app.frame('/share', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div>Unable to retrieve user information: No FID provided</div>
         </div>
@@ -307,7 +303,6 @@ app.frame('/share', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div style={{
             display: 'flex',
@@ -376,7 +371,6 @@ app.frame('/share', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div>Error fetching data. Please try again later.</div>
         </div>
