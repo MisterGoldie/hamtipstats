@@ -17,7 +17,7 @@ interface HamUserData {
   };
   hamScore: number;
   todaysAllocation: string;
-  percentTipped: number; // Added this field
+  percentTipped: number;
 }
 
 interface FloatyBalance {
@@ -45,8 +45,8 @@ export const app = new Frog({
 const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
-const backgroundImage = "https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png";
-const errorBackgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png";
+const backgroundImage = "https://bafybeigyivd6xymrgnzhxuvbeemrt74dev7y5qkog3rvpt5xb3ljdpe5fi.ipfs.w3s.link/check%20frame%2026.png";
+const errorBackgroundImage = "https://bafybeiheknxnjt2zbnue4wrxed5igyxlntp6cc3jqkogqy7eggoestrh5i.ipfs.w3s.link/check%20frame%2027.png";
 
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
