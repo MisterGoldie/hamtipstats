@@ -228,7 +228,7 @@ app.frame('/check', async (c) => {
                 <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
               </div>
               <div style={{display: 'flex', flexDirection: 'column', marginTop: '20px'}}>
-                <span>Tipped Today:</span>
+                <span style={{fontSize: '24px', marginBottom: '10px'}}>Tipped Today:</span>
                 <div style={{
                   position: 'relative',
                   width: '100%',
@@ -236,7 +236,6 @@ app.frame('/check', async (c) => {
                   backgroundColor: 'rgba(255,255,255,0.3)',
                   borderRadius: '15px',
                   overflow: 'hidden',
-                  marginTop: '10px'
                 }}>
                   <div style={{
                     position: 'absolute',
@@ -245,7 +244,6 @@ app.frame('/check', async (c) => {
                     height: '100%',
                     width: `${Math.min(tippedPercentage, 100)}%`,
                     backgroundColor: 'red',
-                    transition: 'width 0.5s ease-in-out'
                   }} />
                   <div style={{
                     position: 'absolute',
@@ -253,9 +251,9 @@ app.frame('/check', async (c) => {
                     top: '50%',
                     transform: 'translateY(-50%)',
                     color: 'white',
-                    fontSize: '16px'
+                    fontSize: '16px',
                   }}>
-                    0
+                    0%
                   </div>
                   <div style={{
                     position: 'absolute',
@@ -263,7 +261,7 @@ app.frame('/check', async (c) => {
                     top: '50%',
                     transform: 'translateY(-50%)',
                     color: 'white',
-                    fontSize: '16px'
+                    fontSize: '16px',
                   }}>
                     100%
                   </div>
@@ -271,9 +269,9 @@ app.frame('/check', async (c) => {
                 <div style={{
                   textAlign: 'center',
                   marginTop: '5px',
-                  fontSize: '20px'
+                  fontSize: '20px',
                 }}>
-                  {tippedPercentage.toFixed(2)}% of allocation tipped today
+                  {tippedPercentage.toFixed(2)}% of today's allocation tipped
                 </div>
               </div>
             </div>
