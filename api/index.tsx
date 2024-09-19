@@ -201,20 +201,22 @@ app.frame('/check', async (c) => {
             <div style={{fontSize: '24px', marginBottom: '20px'}}>
               FID: {userFid} | Rank: {rank}
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Total $HAM: {totalHam}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              HAM Score: {hamScore}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Today's Allocation: {todaysAllocation}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Total Tipped Today: {totalTippedToday}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '20px'}}>
-              Floaty Balance: {floatyBalanceValue}
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Total $HAM: {totalHam}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                HAM Score: {hamScore}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Today's Allocation: {todaysAllocation}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Total Tipped Today: {totalTippedToday}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '20px'}}>
+                Floaty Balance: {floatyBalanceValue}
+              </div>
             </div>
             <div style={{fontSize: '24px', marginTop: '20px'}}>
               $HAM Token Tracker
