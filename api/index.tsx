@@ -93,7 +93,7 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
 }
 
 app.frame('/', () => {
-  const gifUrl = 'https://bafybeihoubeuayeddujv53eyykwegu7ekn5glgmaaouylb5bf6o2ffbmha.ipfs.w3s.link/IMG_8058%201.gif'
+  const gifUrl = 'https://bafybeihtvzswbyb6gdyh32tofvvw6z72f5qvqfnfei6ir3kqx5426xwo7q.ipfs.w3s.link/IMG_8059.GIF'
   const baseUrl = 'https://hamtipstats.vercel.app'
 
   const html = `
