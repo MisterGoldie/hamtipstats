@@ -93,7 +93,7 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
 }
 
 app.frame('/', () => {
-  const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF'
+  const gifUrl = 'https://bafybeihoubeuayeddujv53eyykwegu7ekn5glgmaaouylb5bf6o2ffbmha.ipfs.w3s.link/IMG_8058%201.gif'
   const baseUrl = 'https://hamtipstats.vercel.app'
 
   const html = `
@@ -305,7 +305,6 @@ app.frame('/check', async (c) => {
   }
 });
 
-// The code stops here, before the /share frame
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
