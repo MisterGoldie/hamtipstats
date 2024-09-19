@@ -52,6 +52,12 @@ function formatLargeNumber(strNumber: string): string {
   return number.toFixed(2);
 }
 
+function calculateTippedPercentage(totalTipped: string, totalBalance: string): number {
+  const tipped = Number(totalTipped);
+  const balance = Number(totalBalance);
+  return (tipped / balance) * 100;
+}
+
 async function getHamUserData(fid: string): Promise<HamUserData> {
   try {
     const url = `${HAM_API_URL}/${fid}`;
@@ -114,29 +120,6 @@ app.frame('/', () => {
   })
 })
 
-interface HamUserData {
-  balance: { ham: string };
-  rank: number;
-  totalTippedToday: string;
-  casterToken: {
-    totalVolume: number;
-    user: {
-      username: string;
-      fid: number;
-    };
-  };
-  hamScore: number;
-  todaysAllocation: string;
-  hamLevel: number; // New field for $HAM level
-}
-
-// ... (rest of the imports and existing code)
-
-function calculateHamLevel(totalTipped: number): number {
-  // This is a simple example. You may want to adjust the leveling algorithm.
-  return Math.floor(Math.log10(totalTipped + 1)) + 1;
-}
-
 app.frame('/check', async (c) => {
   const { fid } = c.frameData ?? {};
 
@@ -187,14 +170,8 @@ app.frame('/check', async (c) => {
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
 
-    // Calculate HAM level
-    const totalTipped = Number(hamUserData.totalTippedToday) / 1e18;
-    const hamLevel = calculateHamLevel(totalTipped);
-
-    // Create HAM level indicator
-    const hamLevelIndicator = Array(10).fill('🍖').map((ham, index) => 
-      index < hamLevel ? '🔥' : ham
-    ).join('');
+    // Calculate tipped percentage
+    const tippedPercentage = calculateTippedPercentage(hamUserData.totalTippedToday, hamUserData.balance.ham);
 
     return c.res({
       image: (
@@ -237,11 +214,55 @@ app.frame('/check', async (c) => {
               <span>Floaty Balance:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '20px'}}>
-              <span>$HAM Level:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamLevel}</span>
+            <div style={{display: 'flex', flexDirection: 'column', width: '100%', marginTop: '20px'}}>
+              <span>Tipped Today:</span>
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                height: '30px',
+                backgroundColor: 'rgba(255,255,255,0.3)',
+                borderRadius: '15px',
+                overflow: 'hidden',
+                marginTop: '10px'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '0',
+                  top: '0',
+                  height: '100%',
+                  width: `${Math.min(tippedPercentage, 100)}%`,
+                  backgroundColor: 'red',
+                  transition: 'width 0.5s ease-in-out'
+                }} />
+                <div style={{
+                  position: 'absolute',
+                  left: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  fontSize: '16px'
+                }}>
+                  0
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'white',
+                  fontSize: '16px'
+                }}>
+                  100%
+                </div>
+              </div>
+              <div style={{
+                textAlign: 'center',
+                marginTop: '5px',
+                fontSize: '20px'
+              }}>
+                {tippedPercentage.toFixed(2)}% of balance tipped today
+              </div>
             </div>
-            <div style={{fontSize: '40px', marginTop: '10px'}}>{hamLevelIndicator}</div>
           </div>
           
           <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
@@ -283,6 +304,8 @@ app.frame('/check', async (c) => {
     });
   }
 });
+
+// The code stops here, before the /share frame
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
