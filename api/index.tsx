@@ -20,7 +20,14 @@ interface HamUserData {
 }
 
 interface FloatyBalance {
-  balance: number;
+  balances: Array<{
+    address: string;
+    floatyHash: string;
+    createdAt: string;
+    total: number;
+    updatedAt: string;
+    emoji: string;
+  }>;
 }
 
 export const app = new Frog({
@@ -38,7 +45,7 @@ const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
 const backgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png";
-const errorBackgroundImage = ""; // Replace with actual error background
+const errorBackgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png"; // Replace with actual error background
 
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
@@ -80,8 +87,8 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
 }
 
 app.frame('/', () => {
-  const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF' // Replace with actual GIF URL
-  const baseUrl = 'https://hamtipstats.vercel.app' // Update this to your actual URL
+  const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF'
+  const baseUrl = 'https://hamtipstats.vercel.app'
 
   const html = `
     <!DOCTYPE html>
@@ -153,7 +160,9 @@ app.frame('/check', async (c) => {
     const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
     const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : 'N/A';
     const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : 'N/A';
-    const floatyBalanceValue = floatyBalance?.balance != null ? floatyBalance.balance.toFixed(2) : 'N/A';
+    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
+      ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
+      : 'N/A';
 
     // Create the share text
     const shareText = `Check out my $HAM stats! Total $HAM: ${totalHam}, Rank: ${rank}. Check yours with the $HAM Token Tracker!`;
@@ -247,6 +256,8 @@ app.frame('/check', async (c) => {
   }
 });
 
+// ... (previous code remains the same)
+
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
 
@@ -274,11 +285,19 @@ app.frame('/share', async (c) => {
   }
 
   try {
-    const hamUserData = await getHamUserData(fid.toString());
+    const [hamUserData, floatyBalance] = await Promise.all([
+      getHamUserData(fid.toString()),
+      getFloatyBalance(fid.toString())
+    ]);
 
     const shareBackgroundImage = "https://bafybeidhdqc3vwqfgzharotwqbsvgd5wuhyltpjywy2hvyqhtm7laovihm.ipfs.w3s.link/check%20frame%204.png";
 
-    const shareText = `My $HAM stats: Total $HAM: ${formatLargeNumber(hamUserData.balance.ham)}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
+    const totalHam = formatLargeNumber(hamUserData.balance.ham);
+    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
+      ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
+      : 'N/A';
+
+    const shareText = `My $HAM stats: Total $HAM: ${totalHam}, Rank: ${hamUserData.rank}, Floaty Balance: ${floatyBalanceValue}. Check yours with the $HAM Token Tracker!`;
     const shareUrl = `https://hamtipstats.vercel.app/api`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
@@ -304,7 +323,7 @@ app.frame('/share', async (c) => {
               $HAM Stats for @{hamUserData.casterToken.user.username}
             </div>
             <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Total $HAM: {formatLargeNumber(hamUserData.balance.ham)}
+              Total $HAM: {totalHam}
             </div>
             <div style={{fontSize: '36px', marginBottom: '10px'}}>
               Rank: {hamUserData.rank}
@@ -314,6 +333,9 @@ app.frame('/share', async (c) => {
             </div>
             <div style={{fontSize: '36px', marginBottom: '10px'}}>
               Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Floaty Balance: {floatyBalanceValue}
             </div>
             <div style={{fontSize: '24px', marginTop: 'auto'}}>
               Check your $HAM stats with the $HAM Token Tracker!
