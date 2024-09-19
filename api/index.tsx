@@ -114,6 +114,29 @@ app.frame('/', () => {
   })
 })
 
+interface HamUserData {
+  balance: { ham: string };
+  rank: number;
+  totalTippedToday: string;
+  casterToken: {
+    totalVolume: number;
+    user: {
+      username: string;
+      fid: number;
+    };
+  };
+  hamScore: number;
+  todaysAllocation: string;
+  hamLevel: number; // New field for $HAM level
+}
+
+// ... (rest of the imports and existing code)
+
+function calculateHamLevel(totalTipped: number): number {
+  // This is a simple example. You may want to adjust the leveling algorithm.
+  return Math.floor(Math.log10(totalTipped + 1)) + 1;
+}
+
 app.frame('/check', async (c) => {
   const { fid } = c.frameData ?? {};
 
@@ -164,14 +187,14 @@ app.frame('/check', async (c) => {
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
 
-    // Create the share text
-    const shareText = `Check out my $HAM stats! Total $HAM: ${totalHam}, Rank: ${rank}. Check yours with the $HAM Token Tracker!`;
+    // Calculate HAM level
+    const totalTipped = Number(hamUserData.totalTippedToday) / 1e18;
+    const hamLevel = calculateHamLevel(totalTipped);
 
-    // Create the share URL (this should point to your frame's entry point)
-    const shareUrl = `https://hamtipstats.vercel.app/api`;
-
-    // Create the Farcaster share URL
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+    // Create HAM level indicator
+    const hamLevelIndicator = Array(10).fill('🍖').map((ham, index) => 
+      index < hamLevel ? '🔥' : ham
+    ).join('');
 
     return c.res({
       image: (
@@ -214,6 +237,11 @@ app.frame('/check', async (c) => {
               <span>Floaty Balance:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '20px'}}>
+              <span>$HAM Level:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamLevel}</span>
+            </div>
+            <div style={{fontSize: '40px', marginTop: '10px'}}>{hamLevelIndicator}</div>
           </div>
           
           <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
@@ -224,7 +252,7 @@ app.frame('/check', async (c) => {
       intents: [
         <Button action="/">Home</Button>,
         <Button action="/check">Refresh</Button>,
-        <Button.Link href={farcasterShareURL}>Share</Button.Link>,
+        <Button action="/share">Share</Button>,
       ],
     });
   } catch (error) {
@@ -255,8 +283,6 @@ app.frame('/check', async (c) => {
     });
   }
 });
-
-// ... (previous code remains the same)
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
