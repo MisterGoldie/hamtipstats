@@ -45,11 +45,18 @@ const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
 const backgroundImage = "https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png";
-const errorBackgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png"; // Replace with actual error background
+const errorBackgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png";
 
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
   return number.toFixed(2);
+}
+
+function calculateUsersTipped(totalTipped: number): number {
+  // This is a placeholder calculation. You should replace this with the actual logic
+  // to determine the number of users tipped based on your data.
+  // For now, we'll just divide the total tipped by 10 (assuming 10 $HAM per tip on average)
+  return Math.min(Math.floor(totalTipped / 10), 10);
 }
 
 async function getHamUserData(fid: string): Promise<HamUserData> {
@@ -114,29 +121,6 @@ app.frame('/', () => {
   })
 })
 
-interface HamUserData {
-  balance: { ham: string };
-  rank: number;
-  totalTippedToday: string;
-  casterToken: {
-    totalVolume: number;
-    user: {
-      username: string;
-      fid: number;
-    };
-  };
-  hamScore: number;
-  todaysAllocation: string;
-  hamLevel: number; // New field for $HAM level
-}
-
-// ... (rest of the imports and existing code)
-
-function calculateHamLevel(totalTipped: number): number {
-  // This is a simple example. You may want to adjust the leveling algorithm.
-  return Math.floor(Math.log10(totalTipped + 1)) + 1;
-}
-
 app.frame('/check', async (c) => {
   const { fid } = c.frameData ?? {};
 
@@ -144,22 +128,20 @@ app.frame('/check', async (c) => {
     console.error('No FID provided');
     return c.res({
       image: (
-        <div
-          style={{
-            backgroundImage: `url(${errorBackgroundImage})`,
-            width: '1200px',
-            height: '628px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: 'white',
-            fontSize: '40px',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-          }}
-        >
-          <div style={{ display: 'flex' }}>Unable to retrieve user information: No FID provided</div>
+        <div style={{
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+        }}>
+          <div>Unable to retrieve user information: No FID provided</div>
         </div>
       ),
       intents: [
@@ -187,13 +169,13 @@ app.frame('/check', async (c) => {
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
 
-    // Calculate HAM level
+    // Calculate users tipped
     const totalTipped = Number(hamUserData.totalTippedToday) / 1e18;
-    const hamLevel = calculateHamLevel(totalTipped);
+    const usersTipped = calculateUsersTipped(totalTipped);
 
     // Create HAM level indicator
     const hamLevelIndicator = Array(10).fill('🍖').map((ham, index) => 
-      index < hamLevel ? '🔥' : ham
+      index < usersTipped ? '🔥' : ham
     ).join('');
 
     return c.res({
@@ -238,8 +220,8 @@ app.frame('/check', async (c) => {
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '20px'}}>
-              <span>$HAM Level:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamLevel}</span>
+              <span>Users Tipped Today:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{usersTipped}</span>
             </div>
             <div style={{fontSize: '40px', marginTop: '10px'}}>{hamLevelIndicator}</div>
           </div>
@@ -259,22 +241,20 @@ app.frame('/check', async (c) => {
     console.error('Error in check frame:', error);
     return c.res({
       image: (
-        <div
-          style={{
-            backgroundImage: `url(${errorBackgroundImage})`,
-            width: '1200px',
-            height: '628px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: 'white',
-            fontSize: '40px',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-          }}
-        >
-          <div style={{ display: 'flex' }}>Error retrieving $HAM stats</div>
+        <div style={{
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+        }}>
+          <div>Error retrieving $HAM stats</div>
         </div>
       ),
       intents: [
@@ -283,6 +263,8 @@ app.frame('/check', async (c) => {
     });
   }
 });
+
+// The code stops here, just before the /share frame
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
@@ -319,11 +301,23 @@ app.frame('/share', async (c) => {
     const shareBackgroundImage = "https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png";
 
     const totalHam = formatLargeNumber(hamUserData.balance.ham);
+    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
+    const todaysAllocation = formatLargeNumber(hamUserData.todaysAllocation);
+    const totalTippedToday = formatLargeNumber(hamUserData.totalTippedToday);
     const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
 
-    const shareText = `My $HAM stats: Total $HAM: ${totalHam}, Rank: ${hamUserData.rank}, Floaty Balance: ${floatyBalanceValue}. Check yours with the $HAM Token Tracker!`;
+    // Calculate users tipped
+    const totalTipped = Number(hamUserData.totalTippedToday) / 1e18;
+    const usersTipped = calculateUsersTipped(totalTipped);
+
+    // Create HAM level indicator
+    const hamLevelIndicator = Array(10).fill('🍖').map((ham, index) => 
+      index < usersTipped ? '🔥' : ham
+    ).join('');
+
+    const shareText = `My $HAM stats: Total $HAM: ${totalHam}, Rank: ${hamUserData.rank}, Users Tipped Today: ${usersTipped}. Check yours with the $HAM Token Tracker!`;
     const shareUrl = `https://hamtipstats.vercel.app/api`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
@@ -348,22 +342,41 @@ app.frame('/share', async (c) => {
             <div style={{fontSize: '48px', marginBottom: '20px'}}>
               $HAM Stats for @{hamUserData.casterToken.user.username}
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Total $HAM: {totalHam}
+            <div style={{fontSize: '24px', marginBottom: '20px'}}>
+              FID: {hamUserData.casterToken.user.fid} | Rank: {hamUserData.rank}
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Rank: {hamUserData.rank}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              fontSize: '36px',
+            }}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <span>Total $HAM:</span>
+                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <span>HAM Score:</span>
+                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <span>Today's Allocation:</span>
+                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <span>Total Tipped Today:</span>
+                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <span>Floaty Balance:</span>
+                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                <span>Users Tipped Today:</span>
+                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{usersTipped}</span>
+              </div>
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              HAM Score: {hamUserData.hamScore.toFixed(2)}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Floaty Balance: {floatyBalanceValue}
-            </div>
-            <div style={{fontSize: '24px', marginTop: 'auto'}}>
+            <div style={{fontSize: '40px', marginTop: '10px', textAlign: 'center'}}>{hamLevelIndicator}</div>
+            <div style={{fontSize: '24px', marginTop: 'auto', textAlign: 'center'}}>
               Check your $HAM stats with the $HAM Token Tracker!
             </div>
           </div>
