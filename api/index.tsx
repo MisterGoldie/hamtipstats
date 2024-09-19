@@ -1,8 +1,8 @@
 /** @jsxImportSource frog/jsx */
 
-import { Button, Frog } from 'frog';
-import { handle } from 'frog/vercel';
-import { neynar } from 'frog/middlewares';
+import { Button, Frog } from 'frog'
+import { handle } from 'frog/vercel'
+import { neynar } from 'frog/middlewares'
 
 interface HamUserData {
   balance: { ham: string };
@@ -93,8 +93,8 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
 }
 
 app.frame('/', () => {
-  const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF';
-  const baseUrl = 'https://hamtipstats.vercel.app';
+  const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF'
+  const baseUrl = 'https://hamtipstats.vercel.app'
 
   const html = `
     <!DOCTYPE html>
@@ -113,12 +113,12 @@ app.frame('/', () => {
       <h1>$HAM Token Tracker. Check your $HAM and Floaty balance!</h1>
     </body>
     </html>
-  `;
+  `
 
   return new Response(html, {
     headers: { 'Content-Type': 'text/html' },
-  });
-});
+  })
+})
 
 app.frame('/check', async (c) => {
   const { fid } = c.frameData ?? {};
@@ -146,7 +146,7 @@ app.frame('/check', async (c) => {
         </div>
       ),
       intents: [
-        <Button action="/">Try Again</Button>,
+        <Button action="/">Try Again</Button>
       ],
     });
   }
@@ -166,7 +166,7 @@ app.frame('/check', async (c) => {
     const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
     const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : 'N/A';
     const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : 'N/A';
-    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null
+    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
 
@@ -299,12 +299,13 @@ app.frame('/check', async (c) => {
         </div>
       ),
       intents: [
-        <Button action="/">Try Again</Button>,
+        <Button action="/">Try Again</Button>
       ],
     });
   }
 });
 
+// The code stops here, before the /share frame
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
