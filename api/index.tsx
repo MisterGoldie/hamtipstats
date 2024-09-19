@@ -70,7 +70,7 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
 
 app.frame('/', () => {
   const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF' // Replace with actual GIF URL
-  const baseUrl = 'https://hamtipstats.vercel.app/api' // Replace with your app's base URL
+  const baseUrl = 'https://hamtipstats.vercel.app' // Replace with your app's base URL
 
   const html = `
     <!DOCTYPE html>
@@ -83,7 +83,7 @@ app.frame('/', () => {
       <meta property="fc:frame:image" content="${gifUrl}">
       <meta property="fc:frame:button:1" content="Check $HAM stats">
       <meta property="fc:frame:button:1:action" content="post">
-      <meta property="fc:frame:post_url" content="${baseUrl}/api/check-ham-stats">
+      <meta property="fc:frame:post_url" content="${baseUrl}/api/check">
     </head>
     <body>
       <h1>$HAM Token Tracker. Check your $HAM and Floaty balance!</h1>
@@ -96,7 +96,7 @@ app.frame('/', () => {
   })
 })
 
-app.frame('/check-ham-stats', async (c) => {
+app.frame('/check', async (c) => {
   const { fid } = c.frameData ?? {};
 
   if (!fid) {
@@ -132,12 +132,14 @@ app.frame('/check-ham-stats', async (c) => {
       getHamUserData(fid.toString()),
       getFloatyBalance(fid.toString())
     ]);
+    console.log('HAM User Data:', hamUserData);
+    console.log('Floaty Balance:', floatyBalance);
 
     // Create the share text
     const shareText = `Check out my $HAM stats! Total $HAM: ${hamUserData.totalHam}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
 
     // Create the share URL (this should point to your frame's entry point)
-    const shareUrl = `https://your-app-url.com/api`;
+    const shareUrl = `https://hamtipstats.vercel.app/api`;
 
     // Create the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
@@ -188,12 +190,12 @@ app.frame('/check-ham-stats', async (c) => {
       ),
       intents: [
         <Button action="/">Home</Button>,
-        <Button action="/check-ham-stats">Refresh</Button>,
+        <Button action="/check">Refresh</Button>,
         <Button.Link href={farcasterShareURL}>Share</Button.Link>,
       ],
     });
   } catch (error) {
-    console.error('Error in check-ham-stats frame:', error);
+    console.error('Error in check frame:', error);
     return c.res({
       image: (
         <div
@@ -217,6 +219,127 @@ app.frame('/check-ham-stats', async (c) => {
       intents: [
         <Button action="/">Try Again</Button>
       ],
+    });
+  }
+});
+
+
+app.frame('/share', async (c) => {
+  const { fid } = c.frameData ?? {};
+
+  if (!fid) {
+    return c.res({
+      image: (
+        <div style={{
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+        }}>
+          <div>Unable to retrieve user information: No FID provided</div>
+        </div>
+      ),
+      intents: [<Button action="/">Back to Home</Button>],
+    });
+  }
+
+  try {
+    const [hamUserData, floatyBalance] = await Promise.all([
+      getHamUserData(fid.toString()),
+      getFloatyBalance(fid.toString())
+    ]);
+
+    if (hamUserData && floatyBalance) {
+      // Use a specific background for sharing
+      const shareBackgroundImage = "https://bafybeidhdqc3vwqfgzharotwqbsvgd5wuhyltpjywy2hvyqhtm7laovihm.ipfs.w3s.link/check%20frame%204.png";
+
+      // Create the share text
+      const shareText = `My $HAM stats: Total $HAM: ${hamUserData.totalHam}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
+
+      // Create the share URL (this should point to your frame's entry point)
+      const shareUrl = `https://hamtipstats.vercel.app/api`;
+
+      // Create the Farcaster share URL
+      const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+
+      return c.res({
+        image: (
+          <div style={{
+            backgroundImage: `url(${shareBackgroundImage})`,
+            width: '1200px',
+            height: '628px',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '20px',
+            color: 'white',
+            fontWeight: 'bold',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1,
+            }}>
+              <div style={{fontSize: '48px', marginBottom: '20px'}}>
+                $HAM Stats for @{hamUserData.username}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Total $HAM: {hamUserData.totalHam}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Rank: {hamUserData.rank}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Total Tips Received: {hamUserData.totalTips}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Total Tipped: {hamUserData.totalTipped}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Floaty Balance: {floatyBalance.balance}
+              </div>
+              <div style={{fontSize: '24px', marginTop: 'auto'}}>
+                Check your $HAM stats with the $HAM Token Tracker!
+              </div>
+            </div>
+          </div>
+        ),
+        intents: [
+          <Button action="/">Check Your Stats</Button>,
+          <Button.Link href={farcasterShareURL}>Share Your Stats</Button.Link>,
+        ],
+      });
+    } else {
+      throw new Error('No HAM user data or Floaty balance available');
+    }
+  } catch (error) {
+    console.error('Error in share frame:', error);
+    return c.res({
+      image: (
+        <div style={{
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+        }}>
+          <div>Error fetching data. Please try again later.</div>
+        </div>
+      ),
+      intents: [<Button action="/">Back to Home</Button>],
     });
   }
 });
