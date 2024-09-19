@@ -181,44 +181,43 @@ app.frame('/check', async (c) => {
           height: '628px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
           textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-          textAlign: 'center',
         }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            maxWidth: '80%',
-          }}>
-            <div style={{fontSize: '48px', marginBottom: '20px'}}>
-              @{username}
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+            <div style={{display: 'flex', flexDirection: 'column'}}>
+              <span style={{fontSize: '80px', textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>@{username}</span>
+              <span style={{fontSize: '30px', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>FID: {userFid} | Rank: {rank}</span>
             </div>
-            <div style={{fontSize: '24px', marginBottom: '20px'}}>
-              FID: {userFid} | Rank: {rank}
+          </div>
+          
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+              <span>Total $HAM:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Total $HAM: {totalHam}
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+              <span>HAM Score:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              HAM Score: {hamScore}
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+              <span>Today's Allocation:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Today's Allocation: {todaysAllocation}
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+              <span>Total Tipped Today:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Total Tipped Today: {totalTippedToday}
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+              <span>Floaty Balance:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
-            <div style={{fontSize: '36px', marginBottom: '20px'}}>
-              Floaty Balance: {floatyBalanceValue}
-            </div>
-            <div style={{fontSize: '24px', marginTop: '20px'}}>
-              $HAM Token Tracker
-            </div>
+          </div>
+          
+          <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
+            $HAM Token Tracker
           </div>
         </div>
       ),
@@ -256,6 +255,8 @@ app.frame('/check', async (c) => {
     });
   }
 });
+
+// ... (previous code remains the same)
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
@@ -308,41 +309,35 @@ app.frame('/share', async (c) => {
           height: '628px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
           textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-          textAlign: 'center',
         }}>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            maxWidth: '80%',
+            flex: 1,
           }}>
             <div style={{fontSize: '48px', marginBottom: '20px'}}>
               $HAM Stats for @{hamUserData.casterToken.user.username}
             </div>
-            <div style={{fontSize: '24px', marginBottom: '20px'}}>
-              FID: {hamUserData.casterToken.user.fid} | Rank: {hamUserData.rank}
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Total $HAM: {totalHam}
             </div>
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                Total $HAM: {totalHam}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                HAM Score: {hamUserData.hamScore.toFixed(2)}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '20px'}}>
-                Floaty Balance: {floatyBalanceValue}
-              </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Rank: {hamUserData.rank}
             </div>
-            <div style={{fontSize: '24px', marginTop: '20px'}}>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              HAM Score: {hamUserData.hamScore.toFixed(2)}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Floaty Balance: {floatyBalanceValue}
+            </div>
+            <div style={{fontSize: '24px', marginTop: 'auto'}}>
               Check your $HAM stats with the $HAM Token Tracker!
             </div>
           </div>
