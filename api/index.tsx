@@ -37,8 +37,8 @@ export const app = new Frog({
 const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
-const backgroundImage = "https://bafybeiayzxthtwanqccqgk7bod2bclor5sdy7govxfummtyhf3eyp2vrx4.ipfs.w3s.link/check%20frame%2015.png";
-const errorBackgroundImage = "https://example.com/error-background.png"; // Replace with actual error background
+const backgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png";
+const errorBackgroundImage = ""; // Replace with actual error background
 
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
@@ -146,8 +146,17 @@ app.frame('/check', async (c) => {
     console.log('HAM User Data:', hamUserData);
     console.log('Floaty Balance:', floatyBalance);
 
+    const username = hamUserData?.casterToken?.user?.username || 'Unknown';
+    const userFid = hamUserData?.casterToken?.user?.fid || fid;
+    const rank = hamUserData?.rank || 'N/A';
+    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : 'N/A';
+    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
+    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : 'N/A';
+    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : 'N/A';
+    const floatyBalanceValue = floatyBalance?.balance != null ? floatyBalance.balance.toFixed(2) : 'N/A';
+
     // Create the share text
-    const shareText = `Check out my $HAM stats! Total $HAM: ${formatLargeNumber(hamUserData.balance.ham)}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
+    const shareText = `Check out my $HAM stats! Total $HAM: ${totalHam}, Rank: ${rank}. Check yours with the $HAM Token Tracker!`;
 
     // Create the share URL (this should point to your frame's entry point)
     const shareUrl = `https://hamtipstats.vercel.app/api`;
@@ -170,31 +179,31 @@ app.frame('/check', async (c) => {
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px', textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>@{hamUserData.casterToken.user.username}</span>
-              <span style={{fontSize: '30px', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>FID: {hamUserData.casterToken.user.fid} | Rank: {hamUserData.rank}</span>
+              <span style={{fontSize: '80px', textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>@{username}</span>
+              <span style={{fontSize: '30px', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>FID: {userFid} | Rank: {rank}</span>
             </div>
           </div>
           
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
               <span>Total $HAM:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{formatLargeNumber(hamUserData.balance.ham)}</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
               <span>HAM Score:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamUserData.hamScore.toFixed(2)}</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
               <span>Today's Allocation:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{formatLargeNumber(hamUserData.todaysAllocation)}</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
               <span>Total Tipped Today:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{formatLargeNumber(hamUserData.totalTippedToday)}</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
               <span>Floaty Balance:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalance.balance.toFixed(2)}</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
           </div>
           
