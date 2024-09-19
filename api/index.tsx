@@ -121,20 +121,22 @@ app.frame('/check', async (c) => {
     console.error('No FID provided');
     return c.res({
       image: (
-        <div style={{
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          fontSize: '40px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-        }}>
-          <div>Unable to retrieve user information: No FID provided</div>
+        <div
+          style={{
+            backgroundImage: `url(${errorBackgroundImage})`,
+            width: '1200px',
+            height: '628px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'white',
+            fontSize: '40px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+          }}
+        >
+          <div style={{ display: 'flex' }}>Unable to retrieve user information: No FID provided</div>
         </div>
       ),
       intents: [
@@ -162,8 +164,13 @@ app.frame('/check', async (c) => {
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
 
+    // Create the share text
     const shareText = `Check out my $HAM stats! Total $HAM: ${totalHam}, Rank: ${rank}. Check yours with the $HAM Token Tracker!`;
+
+    // Create the share URL (this should point to your frame's entry point)
     const shareUrl = `https://hamtipstats.vercel.app/api`;
+
+    // Create the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
     return c.res({
@@ -194,27 +201,20 @@ app.frame('/check', async (c) => {
             <div style={{fontSize: '24px', marginBottom: '20px'}}>
               FID: {userFid} | Rank: {rank}
             </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              fontSize: '36px',
-            }}>
-              <div style={{marginBottom: '10px'}}>
-                Total $HAM: {totalHam}
-              </div>
-              <div style={{marginBottom: '10px'}}>
-                HAM Score: {hamScore}
-              </div>
-              <div style={{marginBottom: '10px'}}>
-                Today's Allocation: {todaysAllocation}
-              </div>
-              <div style={{marginBottom: '10px'}}>
-                Total Tipped Today: {totalTippedToday}
-              </div>
-              <div style={{marginBottom: '20px'}}>
-                Floaty Balance: {floatyBalanceValue}
-              </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Total $HAM: {totalHam}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              HAM Score: {hamScore}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Today's Allocation: {todaysAllocation}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Total Tipped Today: {totalTippedToday}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '20px'}}>
+              Floaty Balance: {floatyBalanceValue}
             </div>
             <div style={{fontSize: '24px', marginTop: '20px'}}>
               $HAM Token Tracker
@@ -232,20 +232,22 @@ app.frame('/check', async (c) => {
     console.error('Error in check frame:', error);
     return c.res({
       image: (
-        <div style={{
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          fontSize: '40px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-        }}>
-          <div>Error retrieving $HAM stats</div>
+        <div
+          style={{
+            backgroundImage: `url(${errorBackgroundImage})`,
+            width: '1200px',
+            height: '628px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'white',
+            fontSize: '40px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+          }}
+        >
+          <div style={{ display: 'flex' }}>Error retrieving $HAM stats</div>
         </div>
       ),
       intents: [
@@ -326,22 +328,17 @@ app.frame('/share', async (c) => {
             <div style={{fontSize: '24px', marginBottom: '20px'}}>
               FID: {hamUserData.casterToken.user.fid} | Rank: {hamUserData.rank}
             </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              fontSize: '36px',
-            }}>
-              <div style={{marginBottom: '10px'}}>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
                 Total $HAM: {totalHam}
               </div>
-              <div style={{marginBottom: '10px'}}>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
                 HAM Score: {hamUserData.hamScore.toFixed(2)}
               </div>
-              <div style={{marginBottom: '10px'}}>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
                 Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
               </div>
-              <div style={{marginBottom: '20px'}}>
+              <div style={{fontSize: '36px', marginBottom: '20px'}}>
                 Floaty Balance: {floatyBalanceValue}
               </div>
             </div>
