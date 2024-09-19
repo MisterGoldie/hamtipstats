@@ -44,7 +44,7 @@ export const app = new Frog({
 const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
-const backgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png";
+const backgroundImage = "https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png";
 const errorBackgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei3fcyehase5amv62we.ipfs.w3s.link/Frame%2059%20(5).png"; // Replace with actual error background
 
 function formatLargeNumber(strNumber: string): string {
@@ -316,7 +316,7 @@ app.frame('/share', async (c) => {
       getFloatyBalance(fid.toString())
     ]);
 
-    const shareBackgroundImage = "https://bafybeidhdqc3vwqfgzharotwqbsvgd5wuhyltpjywy2hvyqhtm7laovihm.ipfs.w3s.link/check%20frame%204.png";
+    const shareBackgroundImage = "https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png";
 
     const totalHam = formatLargeNumber(hamUserData.balance.ham);
     const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
