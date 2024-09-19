@@ -5,12 +5,18 @@ import { handle } from 'frog/vercel'
 import { neynar } from 'frog/middlewares'
 
 interface HamUserData {
-  username: string;
-  fid: number;
-  totalTips: number;
-  totalTipped: number;
-  totalHam: number;
+  balance: { ham: string };
   rank: number;
+  totalTippedToday: string;
+  casterToken: {
+    totalVolume: number;
+    user: {
+      username: string;
+      fid: number;
+    };
+  };
+  hamScore: number;
+  todaysAllocation: string;
 }
 
 interface FloatyBalance {
@@ -33,6 +39,11 @@ const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
 const backgroundImage = "https://bafybeiayzxthtwanqccqgk7bod2bclor5sdy7govxfummtyhf3eyp2vrx4.ipfs.w3s.link/check%20frame%2015.png";
 const errorBackgroundImage = "https://example.com/error-background.png"; // Replace with actual error background
+
+function formatLargeNumber(strNumber: string): string {
+  const number = Number(strNumber) / 1e18;
+  return number.toFixed(2);
+}
 
 async function getHamUserData(fid: string): Promise<HamUserData> {
   try {
@@ -70,7 +81,7 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
 
 app.frame('/', () => {
   const gifUrl = 'https://bafybeidqeedevvjn5iv6h2ivreya3axvuuzkobkhjdfpo3hvrz235o2ria.ipfs.w3s.link/IMG_8044.GIF' // Replace with actual GIF URL
-  const baseUrl = 'https://hamtipstats.vercel.app' // Replace with your app's base URL
+  const baseUrl = 'https://hamtipstats.vercel.app' // Update this to your actual URL
 
   const html = `
     <!DOCTYPE html>
@@ -136,7 +147,7 @@ app.frame('/check', async (c) => {
     console.log('Floaty Balance:', floatyBalance);
 
     // Create the share text
-    const shareText = `Check out my $HAM stats! Total $HAM: ${hamUserData.totalHam}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
+    const shareText = `Check out my $HAM stats! Total $HAM: ${formatLargeNumber(hamUserData.balance.ham)}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
 
     // Create the share URL (this should point to your frame's entry point)
     const shareUrl = `https://hamtipstats.vercel.app/api`;
@@ -159,27 +170,31 @@ app.frame('/check', async (c) => {
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px', textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>@{hamUserData.username}</span>
-              <span style={{fontSize: '30px', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>FID: {hamUserData.fid} | Rank: {hamUserData.rank}</span>
+              <span style={{fontSize: '80px', textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>@{hamUserData.casterToken.user.username}</span>
+              <span style={{fontSize: '30px', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>FID: {hamUserData.casterToken.user.fid} | Rank: {hamUserData.rank}</span>
             </div>
           </div>
           
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
               <span>Total $HAM:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamUserData.totalHam}</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{formatLargeNumber(hamUserData.balance.ham)}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
-              <span>Total Tips Received:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamUserData.totalTips}</span>
+              <span>HAM Score:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamUserData.hamScore.toFixed(2)}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
-              <span>Total Tipped:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamUserData.totalTipped}</span>
+              <span>Today's Allocation:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{formatLargeNumber(hamUserData.todaysAllocation)}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+              <span>Total Tipped Today:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{formatLargeNumber(hamUserData.totalTippedToday)}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
               <span>Floaty Balance:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalance.balance}</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalance.balance.toFixed(2)}</span>
             </div>
           </div>
           
@@ -223,7 +238,6 @@ app.frame('/check', async (c) => {
   }
 });
 
-
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
 
@@ -251,74 +265,58 @@ app.frame('/share', async (c) => {
   }
 
   try {
-    const [hamUserData, floatyBalance] = await Promise.all([
-      getHamUserData(fid.toString()),
-      getFloatyBalance(fid.toString())
-    ]);
+    const hamUserData = await getHamUserData(fid.toString());
 
-    if (hamUserData && floatyBalance) {
-      // Use a specific background for sharing
-      const shareBackgroundImage = "https://bafybeidhdqc3vwqfgzharotwqbsvgd5wuhyltpjywy2hvyqhtm7laovihm.ipfs.w3s.link/check%20frame%204.png";
+    const shareBackgroundImage = "https://bafybeidhdqc3vwqfgzharotwqbsvgd5wuhyltpjywy2hvyqhtm7laovihm.ipfs.w3s.link/check%20frame%204.png";
 
-      // Create the share text
-      const shareText = `My $HAM stats: Total $HAM: ${hamUserData.totalHam}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
+    const shareText = `My $HAM stats: Total $HAM: ${formatLargeNumber(hamUserData.balance.ham)}, Rank: ${hamUserData.rank}. Check yours with the $HAM Token Tracker!`;
+    const shareUrl = `https://hamtipstats.vercel.app/api`;
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
-      // Create the share URL (this should point to your frame's entry point)
-      const shareUrl = `https://hamtipstats.vercel.app/api`;
-
-      // Create the Farcaster share URL
-      const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
-
-      return c.res({
-        image: (
+    return c.res({
+      image: (
+        <div style={{
+          backgroundImage: `url(${shareBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '20px',
+          color: 'white',
+          fontWeight: 'bold',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+        }}>
           <div style={{
-            backgroundImage: `url(${shareBackgroundImage})`,
-            width: '1200px',
-            height: '628px',
             display: 'flex',
             flexDirection: 'column',
-            padding: '20px',
-            color: 'white',
-            fontWeight: 'bold',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+            flex: 1,
           }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1,
-            }}>
-              <div style={{fontSize: '48px', marginBottom: '20px'}}>
-                $HAM Stats for @{hamUserData.username}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                Total $HAM: {hamUserData.totalHam}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                Rank: {hamUserData.rank}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                Total Tips Received: {hamUserData.totalTips}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                Total Tipped: {hamUserData.totalTipped}
-              </div>
-              <div style={{fontSize: '36px', marginBottom: '10px'}}>
-                Floaty Balance: {floatyBalance.balance}
-              </div>
-              <div style={{fontSize: '24px', marginTop: 'auto'}}>
-                Check your $HAM stats with the $HAM Token Tracker!
-              </div>
+            <div style={{fontSize: '48px', marginBottom: '20px'}}>
+              $HAM Stats for @{hamUserData.casterToken.user.username}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Total $HAM: {formatLargeNumber(hamUserData.balance.ham)}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Rank: {hamUserData.rank}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              HAM Score: {hamUserData.hamScore.toFixed(2)}
+            </div>
+            <div style={{fontSize: '36px', marginBottom: '10px'}}>
+              Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
+            </div>
+            <div style={{fontSize: '24px', marginTop: 'auto'}}>
+              Check your $HAM stats with the $HAM Token Tracker!
             </div>
           </div>
-        ),
-        intents: [
-          <Button action="/">Check Your Stats</Button>,
-          <Button.Link href={farcasterShareURL}>Share Your Stats</Button.Link>,
-        ],
-      });
-    } else {
-      throw new Error('No HAM user data or Floaty balance available');
-    }
+        </div>
+      ),
+      intents: [
+        <Button action="/">Check Your Stats</Button>,
+        <Button.Link href={farcasterShareURL}>Share Your Stats</Button.Link>,
+      ],
+    });
   } catch (error) {
     console.error('Error in share frame:', error);
     return c.res({
