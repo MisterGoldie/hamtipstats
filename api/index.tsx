@@ -17,6 +17,7 @@ interface HamUserData {
   };
   hamScore: number;
   todaysAllocation: string;
+  percentTipped: number; // Added this field
 }
 
 interface FloatyBalance {
@@ -50,13 +51,6 @@ const errorBackgroundImage = "https://bafybeiajbch2tb6veul2ydzqmzc62arz5vtpbycei
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
   return number.toFixed(2);
-}
-
-function calculateUsersTipped(totalTipped: number): number {
-  // This is a placeholder calculation. You should replace this with the actual logic
-  // to determine the number of users tipped based on your data.
-  // For now, we'll just divide the total tipped by 10 (assuming 10 $HAM per tip on average)
-  return Math.min(Math.floor(totalTipped / 10), 10);
 }
 
 async function getHamUserData(fid: string): Promise<HamUserData> {
@@ -168,15 +162,7 @@ app.frame('/check', async (c) => {
     const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
-
-    // Calculate users tipped
-    const totalTipped = Number(hamUserData.totalTippedToday) / 1e18;
-    const usersTipped = calculateUsersTipped(totalTipped);
-
-    // Create HAM level indicator
-    const hamLevelIndicator = Array(10).fill('🍖').map((ham, index) => 
-      index < usersTipped ? '🔥' : ham
-    ).join('');
+    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
 
     return c.res({
       image: (
@@ -220,10 +206,9 @@ app.frame('/check', async (c) => {
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '20px'}}>
-              <span>Users Tipped Today:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{usersTipped}</span>
+              <span>Percent Tipped:</span>
+              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
             </div>
-            <div style={{fontSize: '40px', marginTop: '10px'}}>{hamLevelIndicator}</div>
           </div>
           
           <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
@@ -263,8 +248,6 @@ app.frame('/check', async (c) => {
     });
   }
 });
-
-// The code stops here, just before the /share frame
 
 app.frame('/share', async (c) => {
   const { fid } = c.frameData ?? {};
@@ -307,17 +290,9 @@ app.frame('/share', async (c) => {
     const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
       : 'N/A';
+    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
 
-    // Calculate users tipped
-    const totalTipped = Number(hamUserData.totalTippedToday) / 1e18;
-    const usersTipped = calculateUsersTipped(totalTipped);
-
-    // Create HAM level indicator
-    const hamLevelIndicator = Array(10).fill('🍖').map((ham, index) => 
-      index < usersTipped ? '🔥' : ham
-    ).join('');
-
-    const shareText = `My $HAM stats: Total $HAM: ${totalHam}, Rank: ${hamUserData.rank}, Users Tipped Today: ${usersTipped}. Check yours with the $HAM Token Tracker!`;
+    const shareText = `My $HAM stats: Total $HAM: ${totalHam}, Rank: ${hamUserData.rank}, Percent Tipped: ${percentTipped}%. Check yours with the $HAM Token Tracker!`;
     const shareUrl = `https://hamtipstats.vercel.app/api`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
@@ -371,11 +346,10 @@ app.frame('/share', async (c) => {
                 <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <span>Users Tipped Today:</span>
-                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{usersTipped}</span>
+                <span>Percent Tipped:</span>
+                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
               </div>
             </div>
-            <div style={{fontSize: '40px', marginTop: '10px', textAlign: 'center'}}>{hamLevelIndicator}</div>
             <div style={{fontSize: '24px', marginTop: 'auto', textAlign: 'center'}}>
               Check your $HAM stats with the $HAM Token Tracker!
             </div>
