@@ -328,17 +328,19 @@ app.frame('/share', async (c) => {
             <div style={{fontSize: '24px', marginBottom: '20px'}}>
               FID: {hamUserData.casterToken.user.fid} | Rank: {hamUserData.rank}
             </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Total $HAM: {totalHam}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              HAM Score: {hamUserData.hamScore.toFixed(2)}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '10px'}}>
-              Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
-            </div>
-            <div style={{fontSize: '36px', marginBottom: '20px'}}>
-              Floaty Balance: {floatyBalanceValue}
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Total $HAM: {totalHam}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                HAM Score: {hamUserData.hamScore.toFixed(2)}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '10px'}}>
+                Today's Allocation: {formatLargeNumber(hamUserData.todaysAllocation)}
+              </div>
+              <div style={{fontSize: '36px', marginBottom: '20px'}}>
+                Floaty Balance: {floatyBalanceValue}
+              </div>
             </div>
             <div style={{fontSize: '24px', marginTop: '20px'}}>
               Check your $HAM stats with the $HAM Token Tracker!
