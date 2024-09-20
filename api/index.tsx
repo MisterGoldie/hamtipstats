@@ -105,7 +105,7 @@ app.frame('/', () => {
       <meta property="fc:frame:post_url" content="${baseUrl}/api/check">
     </head>
     <body>
-      <h1>$HAM Token Tracker. Check your $HAM and Floaty balance!</h1>
+      <h1>$HAM Token Tracker. Check your $HAM and Floaty balance by @goldie</h1>
     </body>
     </html>
   `
@@ -298,7 +298,7 @@ app.frame('/share', async (c) => {
     floatyBalance
   };
 
-  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and I've tipped ${userInfo.percentTipped}% today. Check your @ham.xyz stats. Frame by @goldie`;
+  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and I've tipped ${userInfo.percentTipped}% today. Check your $HAM stats. Frame by @goldie`;
   const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
 
   return c.res({
