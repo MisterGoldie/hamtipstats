@@ -252,6 +252,7 @@ app.frame('/check', async (c) => {
 });
 
 app.frame('/share', async (c) => {
+  console.log('Share endpoint hit');
   const fid = c.req.query('fid');
   const totalHam = c.req.query('totalHam');
   const rank = c.req.query('rank');
@@ -261,7 +262,10 @@ app.frame('/share', async (c) => {
   const percentTipped = c.req.query('percentTipped');
   const username = c.req.query('username');
 
+  console.log('Query parameters:', { fid, totalHam, rank, hamScore, todaysAllocation, totalTippedToday, percentTipped, username });
+
   if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username) {
+    console.error('Missing required parameters');
     return c.res({
       image: (
         <div style={{ 
@@ -269,8 +273,8 @@ app.frame('/share', async (c) => {
           flexDirection: 'column', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          width: '100%', 
-          height: '100%', 
+          width: '1200px', 
+          height: '628px', 
           backgroundColor: '#f0e6fa',
           color: 'black',
           fontFamily: 'Arial, sans-serif'
@@ -284,70 +288,57 @@ app.frame('/share', async (c) => {
     });
   }
 
-  const backgroundImageUrl = 'https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png';
-
-  return c.res({
-    image: (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        width: '1200px', 
-        height: '628px', 
-        backgroundImage: `url(${backgroundImageUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        padding: '20px',
-        color: 'white',
-        fontFamily: 'Arial, sans-serif',
-        fontWeight: 'bold',
-      }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          marginBottom: '20px'
+  try {
+    console.log('Generating image');
+    return c.res({
+      image: (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          width: '1200px', 
+          height: '628px', 
+          backgroundColor: '#ff4136',
+          color: 'white',
+          fontFamily: 'Arial, sans-serif',
+          padding: '20px',
         }}>
-          <span style={{fontSize: '80px',}}>@{username}</span>
-          <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {rank}</span>
+          <h1 style={{ fontSize: '60px', marginBottom: '20px' }}>@{username}</h1>
+          <p style={{ fontSize: '30px' }}>FID: {fid} | Rank: {rank}</p>
+          <p style={{ fontSize: '40px' }}>Total $HAM: {totalHam}</p>
+          <p style={{ fontSize: '40px' }}>HAM Score: {hamScore}</p>
+          <p style={{ fontSize: '40px' }}>Today's Allocation: {todaysAllocation}</p>
+          <p style={{ fontSize: '40px' }}>Total Tipped Today: {totalTippedToday}</p>
+          <p style={{ fontSize: '40px' }}>Percent Tipped: {percentTipped}%</p>
+          <p style={{ fontSize: '24px', marginTop: 'auto' }}>$HAM Token Tracker</p>
         </div>
-        
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '20px',
-          fontSize: '33px',
-          flex: 1,
+      ),
+      intents: [
+        <Button action="/check">Check Your Stats</Button>
+      ]
+    });
+  } catch (error) {
+    console.error('Error generating image:', error);
+    return c.res({
+      image: (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          width: '1200px', 
+          height: '628px', 
+          backgroundColor: '#ff4136',
+          color: 'white',
+          fontFamily: 'Arial, sans-serif'
         }}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <span>Total $HAM:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <span>HAM Score:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <span>Today's Allocation:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <span>Total Tipped Today:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gridColumn: '1 / -1'}}>
-            <span>Percent Tipped:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
-          </div>
+          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error generating image</h1>
         </div>
-        
-        <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto',}}>
-          $HAM Token Tracker
-        </div>
-      </div>
-    ),
-    intents: [
-      <Button action="/check">Check Your Stats</Button>
-    ]
-  });
+      ),
+      intents: [
+        <Button action="/check">Check Your Stats</Button>
+      ]
+    });
+  }
 });
 
 export const GET = handle(app);
