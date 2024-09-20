@@ -133,6 +133,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div>Unable to retrieve user information: No FID provided</div>
         </div>
@@ -163,6 +164,11 @@ app.frame('/check', async (c) => {
       : 'N/A';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
 
+    // Add sharing constants
+    const shareText = `Check out my $HAM stats! Total $HAM: ${totalHam}, Rank: ${rank}, Percent Tipped: ${percentTipped}%. See yours with the $HAM Token Tracker!`;
+    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&totalHam=${totalHam}&rank=${rank}&hamScore=${hamScore}&todaysAllocation=${todaysAllocation}&totalTippedToday=${totalTippedToday}&percentTipped=${percentTipped}&username=${username}`;
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+
     return c.res({
       image: (
         <div style={{
@@ -174,11 +180,12 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px'}}>@{username}</span>
-              <span style={{fontSize: '30px'}}>FID: {userFid} | Rank: {rank}</span>
+              <span style={{fontSize: '80px', textShadow: '3px 3px 6px rgba(0,0,0,0.5)'}}>@{username}</span>
+              <span style={{fontSize: '30px', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>FID: {userFid} | Rank: {rank}</span>
             </div>
           </div>
           
@@ -207,6 +214,43 @@ app.frame('/check', async (c) => {
               <span>Percent Tipped:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
             </div>
+            
+            {/* White meter */}
+            <div style={{
+              width: '100%',
+              height: '30px',
+              backgroundColor: 'rgba(255,255,255,0.3)',
+              marginTop: '20px',
+              position: 'relative',
+            }}>
+              <div style={{
+                width: `${percentTipped}%`,
+                height: '100%',
+                backgroundColor: 'white',
+              }} />
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '5px',
+                transform: 'translateY(-50%)',
+                color: 'black',
+                fontSize: '14px',
+                fontWeight: 'bold',
+              }}>
+                0%
+              </div>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                right: '5px',
+                transform: 'translateY(-50%)',
+                color: 'black',
+                fontSize: '14px',
+                fontWeight: 'bold',
+              }}>
+                100%
+              </div>
+            </div>
           </div>
           
           <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
@@ -217,7 +261,7 @@ app.frame('/check', async (c) => {
       intents: [
         <Button action="/">Home</Button>,
         <Button action="/check">Refresh</Button>,
-        <Button action="/share">Share</Button>,
+        <Button.Link href={farcasterShareURL}>Share</Button.Link>,
       ],
     });
   } catch (error) {
@@ -235,6 +279,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         }}>
           <div>Error retrieving $HAM stats</div>
         </div>
