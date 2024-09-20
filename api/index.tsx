@@ -298,7 +298,7 @@ app.frame('/share', async (c) => {
     floatyBalance
   };
 
-  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and I've tipped ${userInfo.percentTipped}% today. Check your $HAM stats. Frame by @goldie`;
+  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and i've tipped ${userInfo.percentTipped}% today. Check your $HAM stats. Frame by @goldie`;
   const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
 
   return c.res({
