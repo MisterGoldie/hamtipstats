@@ -45,7 +45,7 @@ export const app = new Frog({
 const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
-const backgroundImage = "https://bafybeigyivd6xymrgnzhxuvbeemrt74dev7y5qkog3rvpt5xb3ljdpe5fi.ipfs.w3s.link/check%20frame%2026.png";
+const backgroundImage = "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
 const errorBackgroundImage = "https://bafybeiheknxnjt2zbnue4wrxed5igyxlntp6cc3jqkogqy7eggoestrh5i.ipfs.w3s.link/check%20frame%2027.png";
 
 function formatLargeNumber(strNumber: string): string {
