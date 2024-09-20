@@ -264,6 +264,8 @@ app.frame('/check', async (c) => {
   }
 });
 
+// The code stops here, just before the /share frame
+
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
   const totalHam = c.req.query('totalHam');
@@ -274,7 +276,6 @@ app.frame('/share', async (c) => {
   const percentTipped = c.req.query('percentTipped');
   const username = c.req.query('username');
   const floatyBalance = c.req.query('floatyBalance');
-  const backgroundImage = c.req.query('backgroundImage') || getRandomBackgroundImage();
   
   if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username || !floatyBalance) {
     return c.res({
@@ -317,7 +318,7 @@ app.frame('/share', async (c) => {
   return c.res({
     image: (
       <div style={{ 
-        backgroundImage: `url(${backgroundImage})`,
+        backgroundImage: `url(${backgroundImages})`,
         width: '1200px',
         height: '628px',
         display: 'flex',
