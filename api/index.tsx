@@ -134,7 +134,7 @@ app.frame('/check', async (c) => {
           fontWeight: 'bold',
           textAlign: 'center',
         }}>
-          <div>Unable to retrieve user information: No FID provided</div>
+          <div>Unable to Retrieve user information: No FID provided</div>
         </div>
       ),
       intents: [
