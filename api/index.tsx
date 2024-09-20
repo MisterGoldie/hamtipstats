@@ -116,6 +116,7 @@ app.frame('/', () => {
 })
 
 app.frame('/check', async (c) => {
+  console.log('Entering /check frame');
   const { fid } = c.frameData ?? {};
 
   if (!fid) {
@@ -163,9 +164,8 @@ app.frame('/check', async (c) => {
       : 'N/A';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
 
-    // Corrected sharing logic
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your @ham.xyz stats. Frame by @goldie`;
-    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&totalHam=${encodeURIComponent(totalHam)}&rank=${rank}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&percentTipped=${percentTipped}&username=${encodeURIComponent(username)}`;
+    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&totalHam=${encodeURIComponent(totalHam)}&rank=${rank}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&percentTipped=${percentTipped}&username=${encodeURIComponent(username)}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
     return c.res({
@@ -252,7 +252,6 @@ app.frame('/check', async (c) => {
 });
 
 app.frame('/share', async (c) => {
-  console.log('Share endpoint hit');
   const fid = c.req.query('fid');
   const totalHam = c.req.query('totalHam');
   const rank = c.req.query('rank');
@@ -261,11 +260,9 @@ app.frame('/share', async (c) => {
   const totalTippedToday = c.req.query('totalTippedToday');
   const percentTipped = c.req.query('percentTipped');
   const username = c.req.query('username');
-
-  console.log('Query parameters:', { fid, totalHam, rank, hamScore, todaysAllocation, totalTippedToday, percentTipped, username });
-
-  if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username) {
-    console.error('Missing required parameters');
+  const floatyBalance = c.req.query('floatyBalance');
+  
+  if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username || !floatyBalance) {
     return c.res({
       image: (
         <div style={{ 
@@ -288,57 +285,72 @@ app.frame('/share', async (c) => {
     });
   }
 
-  try {
-    console.log('Generating image');
-    return c.res({
-      image: (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          width: '1200px', 
-          height: '628px', 
-          backgroundColor: '#ff4136',
-          color: 'white',
-          fontFamily: 'Arial, sans-serif',
-          padding: '20px',
-        }}>
-          <h1 style={{ fontSize: '60px', marginBottom: '20px' }}>@{username}</h1>
-          <p style={{ fontSize: '30px' }}>FID: {fid} | Rank: {rank}</p>
-          <p style={{ fontSize: '40px' }}>Total $HAM: {totalHam}</p>
-          <p style={{ fontSize: '40px' }}>HAM Score: {hamScore}</p>
-          <p style={{ fontSize: '40px' }}>Today's Allocation: {todaysAllocation}</p>
-          <p style={{ fontSize: '40px' }}>Total Tipped Today: {totalTippedToday}</p>
-          <p style={{ fontSize: '40px' }}>Percent Tipped: {percentTipped}%</p>
-          <p style={{ fontSize: '24px', marginTop: 'auto' }}>$HAM Token Tracker</p>
+  const userInfo = {
+    username,
+    totalHam,
+    rank,
+    hamScore,
+    todaysAllocation,
+    totalTippedToday,
+    percentTipped,
+    floatyBalance
+  };
+
+  return c.res({
+    image: (
+      <div style={{ 
+        backgroundImage: `url(${backgroundImage})`,
+        width: '1200px',
+        height: '628px',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '20px',
+        color: 'white',
+        fontWeight: 'bold',
+      }}>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+          <div style={{display: 'flex', flexDirection: 'column'}}>
+            <span style={{fontSize: '80px',}}>@{userInfo.username}</span>
+            <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {userInfo.rank}</span>
+          </div>
         </div>
-      ),
-      intents: [
-        <Button action="/check">Check Your Stats</Button>
-      ]
-    });
-  } catch (error) {
-    console.error('Error generating image:', error);
-    return c.res({
-      image: (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          width: '1200px', 
-          height: '628px', 
-          backgroundColor: '#ff4136',
-          color: 'white',
-          fontFamily: 'Arial, sans-serif'
-        }}>
-          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error generating image</h1>
+        
+        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+            <span>Total $HAM:</span>
+            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.totalHam}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+            <span>HAM Score:</span>
+            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.hamScore}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+            <span>Today's Allocation:</span>
+            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.todaysAllocation}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+            <span>Total Tipped Today:</span>
+            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.totalTippedToday}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+            <span>Floaty Balance:</span>
+            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.floatyBalance}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+            <span>Percent Tipped:</span>
+            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.percentTipped}%</span>
+          </div>
         </div>
-      ),
-      intents: [
-        <Button action="/check">Check Your Stats</Button>
-      ]
-    });
-  }
+        
+        <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
+          $HAM Token Tracker
+        </div>
+      </div>
+    ),
+    intents: [
+      <Button action="/check">Check Your Stats</Button>
+    ]
+  });
 });
 
 export const GET = handle(app);
