@@ -166,7 +166,7 @@ app.frame('/check', async (c) => {
 
     // Add sharing constants
     const shareText = `Check out my $HAM stats! Total $HAM: ${totalHam}, Rank: ${rank}, Percent Tipped: ${percentTipped}%. See yours with the $HAM Token Tracker!`;
-    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&totalHam=${totalHam}&rank=${rank}&hamScore=${hamScore}&todaysAllocation=${todaysAllocation}&totalTippedToday=${totalTippedToday}&percentTipped=${percentTipped}&username=${username}`;
+    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&totalHam=${encodeURIComponent(totalHam)}&rank=${rank}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&percentTipped=${percentTipped}&username=${encodeURIComponent(username)}`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
     return c.res({
@@ -190,66 +190,29 @@ app.frame('/check', async (c) => {
           </div>
           
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>HAM Score:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Today's Allocation:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total Tipped Today:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Floaty Balance:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '20px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Percent Tipped:</span>
               <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
-            </div>
-            
-            {/* White meter */}
-            <div style={{
-              width: '100%',
-              height: '30px',
-              backgroundColor: 'rgba(255,255,255,0.3)',
-              marginTop: '20px',
-              position: 'relative',
-            }}>
-              <div style={{
-                width: `${percentTipped}%`,
-                height: '100%',
-                backgroundColor: 'white',
-              }} />
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '5px',
-                transform: 'translateY(-50%)',
-                color: 'black',
-                fontSize: '14px',
-                fontWeight: 'bold',
-              }}>
-                0%
-              </div>
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                right: '5px',
-                transform: 'translateY(-50%)',
-                color: 'black',
-                fontSize: '14px',
-                fontWeight: 'bold',
-              }}>
-                100%
-              </div>
             </div>
           </div>
           
@@ -292,137 +255,205 @@ app.frame('/check', async (c) => {
 });
 
 app.frame('/share', async (c) => {
-  const { fid } = c.frameData ?? {};
-
-  if (!fid) {
+  const fid = c.req.query('fid');
+  const totalHam = c.req.query('totalHam');
+  const rank = c.req.query('rank');
+  const hamScore = c.req.query('hamScore');
+  const todaysAllocation = c.req.query('todaysAllocation');
+  const totalTippedToday = c.req.query('totalTippedToday');
+  const percentTipped = c.req.query('percentTipped');
+  const username = c.req.query('username');
+  
+  if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username) {
     return c.res({
       image: (
-        <div style={{
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          fontSize: '40px',
-          fontWeight: 'bold',
-          textAlign: 'center',
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          width: '100%', 
+          height: '100%', 
+          backgroundColor: '#f0e6fa',
+          color: 'black',
+          fontFamily: 'Arial, sans-serif'
         }}>
-          <div>Unable to retrieve user information: No FID provided</div>
-        </div>
-      ),
-      intents: [<Button action="/">Back to Home</Button>],
-    });
-  }
-
-  try {
-    const [hamUserData, floatyBalance] = await Promise.all([
-      getHamUserData(fid.toString()),
-      getFloatyBalance(fid.toString())
-    ]);
-
-    const shareBackgroundImage = "https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png";
-
-    const totalHam = formatLargeNumber(hamUserData.balance.ham);
-    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
-    const todaysAllocation = formatLargeNumber(hamUserData.todaysAllocation);
-    const totalTippedToday = formatLargeNumber(hamUserData.totalTippedToday);
-    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
-      ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
-      : 'N/A';
-    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
-
-    const shareText = `My $HAM stats: Total $HAM: ${totalHam}, Rank: ${hamUserData.rank}, Percent Tipped: ${percentTipped}%. Check yours with the $HAM Token Tracker!`;
-    const shareUrl = `https://hamtipstats.vercel.app/api`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
-
-    return c.res({
-      image: (
-        <div style={{
-          backgroundImage: `url(${shareBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '20px',
-          color: 'white',
-          fontWeight: 'bold',
-        }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            flex: 1,
-          }}>
-            <div style={{fontSize: '48px', marginBottom: '20px'}}>
-              $HAM Stats for @{hamUserData.casterToken.user.username}
-            </div>
-            <div style={{fontSize: '24px', marginBottom: '20px'}}>
-              FID: {hamUserData.casterToken.user.fid} | Rank: {hamUserData.rank}
-            </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              fontSize: '36px',
-            }}>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <span>Total $HAM:</span>
-                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <span>HAM Score:</span>
-                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <span>Today's Allocation:</span>
-                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <span>Total Tipped Today:</span>
-                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <span>Floaty Balance:</span>
-                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <span>Percent Tipped:</span>
-                <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
-              </div>
-            </div>
-            <div style={{fontSize: '24px', marginTop: 'auto', textAlign: 'center'}}>
-              Check your $HAM stats with the $HAM Token Tracker!
-            </div>
-          </div>
+          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: Incomplete data provided</h1>
         </div>
       ),
       intents: [
-        <Button action="/">Check Your Stats</Button>,
-        <Button.Link href={farcasterShareURL}>Share Your Stats</Button.Link>,
-      ],
-    });
-  } catch (error) {
-    console.error('Error in share frame:', error);
-    return c.res({
-      image: (
-        <div style={{
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          fontSize: '40px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-        }}>
-          <div>Error fetching data. Please try again later.</div>
-        </div>
-      ),
-      intents: [<Button action="/">Back to Home</Button>],
+        <Button action="/check">Check Your Stats</Button>
+      ]
     });
   }
+
+  const userInfo = {
+    username,
+    totalHam: Number(totalHam),
+    rank: Number(rank),
+    hamScore: Number(hamScore),
+    todaysAllocation: Number(todaysAllocation),
+    totalTippedToday: Number(totalTippedToday),
+    percentTipped: Number(percentTipped)
+  };
+
+  const backgroundImageUrl = 'https://bafybeig4hhgqrxpa2vlp3qmmiq6pc5si4b44jtl4mhryrbyqagu5ujdplu.ipfs.w3s.link/check%20frame%2025.png';
+
+  return c.res({
+    image: (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        width: '100%', 
+        height: '100%', 
+        backgroundImage: `url(${backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        position: 'relative',
+        fontFamily: 'Arial, sans-serif'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: '30px',
+          left: '30px',
+          display: 'flex',
+          alignItems: 'center',
+          width: '100%'
+        }}>
+          <div style={{ marginLeft: 'auto', marginRight: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <p style={{ 
+              fontSize: '72px', 
+              color: 'white', 
+              margin: '0 0 10px 0',
+              fontWeight: 'bold'
+            }}>
+              @{userInfo.username}
+            </p>
+            <p style={{ 
+              fontSize: '24px', 
+              color: 'white', 
+              margin: '0',
+              fontWeight: 'bold'
+            }}>
+              FID: {fid} | Rank: {userInfo.rank}
+            </p>
+          </div>
+        </div>
+        
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          justifyContent: 'center', 
+          position: 'absolute', 
+          top: '35%', 
+          left: '50%', 
+          transform: 'translateX(-50%)',
+          width: '90%' 
+        }}>
+          <div style={{ width: '45%', textAlign: 'center', display: 'flex', flexDirection: 'column', marginBottom: '30px' }}>
+            <p style={{ 
+              fontSize: '28px', 
+              color: '#FFFFFF',
+              marginBottom: '10px'
+            }}>
+              Total $HAM
+            </p>
+            <p style={{ 
+              fontSize: '46px', 
+              fontWeight: 'bold', 
+              color: '#FFFFFF',
+            }}>
+              {userInfo.totalHam.toFixed(2)}
+            </p>
+          </div>
+          <div style={{ width: '45%', textAlign: 'center', display: 'flex', flexDirection: 'column', marginBottom: '30px' }}>
+            <p style={{ 
+              fontSize: '28px', 
+              color: '#FFFFFF',
+              marginBottom: '10px'
+            }}>
+              HAM Score
+            </p>
+            <p style={{ 
+              fontSize: '46px', 
+              fontWeight: 'bold', 
+              color: '#FFFFFF',
+            }}>
+              {userInfo.hamScore.toFixed(2)}
+            </p>
+          </div>
+          <div style={{ width: '45%', textAlign: 'center', display: 'flex', flexDirection: 'column', marginBottom: '30px' }}>
+            <p style={{ 
+              fontSize: '28px', 
+              color: '#FFFFFF',
+              marginBottom: '10px'
+            }}>
+              Today's Allocation
+            </p>
+            <p style={{ 
+              fontSize: '46px', 
+              fontWeight: 'bold', 
+              color: '#FFFFFF',
+            }}>
+              {userInfo.todaysAllocation.toFixed(2)}
+            </p>
+          </div>
+          <div style={{ width: '45%', textAlign: 'center', display: 'flex', flexDirection: 'column', marginBottom: '30px' }}>
+            <p style={{ 
+              fontSize: '28px', 
+              color: '#FFFFFF',
+              marginBottom: '10px'
+            }}>
+              Total Tipped Today
+            </p>
+            <p style={{ 
+              fontSize: '46px', 
+              fontWeight: 'bold', 
+              color: '#FFFFFF',
+            }}>
+              {userInfo.totalTippedToday.toFixed(2)}
+            </p>
+          </div>
+          <div style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+            <p style={{ 
+              fontSize: '28px', 
+              color: '#FFFFFF',
+              marginBottom: '10px'
+            }}>
+              Percent Tipped Today
+            </p>
+            <p style={{ 
+              fontSize: '46px', 
+              fontWeight: 'bold', 
+              color: '#FFFFFF',
+            }}>
+              {userInfo.percentTipped.toFixed(2)}%
+            </p>
+          </div>
+        </div>
+        
+        <div style={{
+          position: 'absolute',
+          bottom: '30px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '24px',
+          color: 'white',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          width: '100%'
+        }}>
+          $HAM Token Tracker
+        </div>
+      </div>
+    ),
+    intents: [
+      <Button action="/check">Check Your Stats</Button>
+    ]
+  });
 });
 
 export const GET = handle(app);
