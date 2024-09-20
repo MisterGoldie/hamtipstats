@@ -263,7 +263,7 @@ app.frame('/share', async (c) => {
   const totalTippedToday = c.req.query('totalTippedToday');
   const percentTipped = c.req.query('percentTipped');
   const username = c.req.query('username');
-  
+
   if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username) {
     return c.res({
       image: (
@@ -284,6 +284,64 @@ app.frame('/share', async (c) => {
       intents: [
         <Button action="/check">Check Your Stats</Button>
       ]
+    });
+  }
+
+  const imageUrl = `https://hamtipstats.vercel.app/api/share/image?fid=${fid}&totalHam=${encodeURIComponent(totalHam)}&rank=${rank}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&percentTipped=${percentTipped}&username=${encodeURIComponent(username)}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>$HAM Token Tracker - Shared Stats</title>
+      <meta property="fc:frame" content="vNext">
+      <meta property="fc:frame:image" content="${imageUrl}">
+      <meta property="fc:frame:button:1" content="Check Your Stats">
+      <meta property="fc:frame:button:1:action" content="post">
+      <meta property="fc:frame:post_url" content="https://hamtipstats.vercel.app/api/check">
+    </head>
+    <body>
+      <h1>$HAM Token Tracker - Shared Stats</h1>
+      <p>View the shared $HAM stats in the Farcaster app.</p>
+    </body>
+    </html>
+  `;
+
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html' },
+  });
+});
+
+// Separate endpoint to generate the image for sharing
+app.frame('/share/image', (c) => {
+  const fid = c.req.query('fid');
+  const totalHam = c.req.query('totalHam');
+  const rank = c.req.query('rank');
+  const hamScore = c.req.query('hamScore');
+  const todaysAllocation = c.req.query('todaysAllocation');
+  const totalTippedToday = c.req.query('totalTippedToday');
+  const percentTipped = c.req.query('percentTipped');
+  const username = c.req.query('username');
+
+  if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username) {
+    return c.res({
+      image: (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          width: '100%', 
+          height: '100%', 
+          backgroundColor: '#f0e6fa',
+          color: 'black',
+          fontFamily: 'Arial, sans-serif'
+        }}>
+          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: Incomplete data provided</h1>
+        </div>
+      ),
     });
   }
 
@@ -450,9 +508,6 @@ app.frame('/share', async (c) => {
         </div>
       </div>
     ),
-    intents: [
-      <Button action="/check">Check Your Stats</Button>
-    ]
   });
 });
 
