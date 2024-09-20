@@ -118,6 +118,7 @@ app.frame('/', () => {
 app.frame('/check', async (c) => {
   console.log('Entering /check frame');
   const { fid } = c.frameData ?? {};
+  const { displayName } = c.var.interactor || {};
 
   if (!fid) {
     console.error('No FID provided');
@@ -152,7 +153,7 @@ app.frame('/check', async (c) => {
     console.log('HAM User Data:', hamUserData);
     console.log('Floaty Balance:', floatyBalance);
 
-    const username = hamUserData?.casterToken?.user?.username || 'Unknown';
+    const username = hamUserData?.casterToken?.user?.username || displayName || 'Unknown';
     const userFid = hamUserData?.casterToken?.user?.fid || fid;
     const rank = hamUserData?.rank || 'N/A';
     const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : 'N/A';
@@ -266,14 +267,14 @@ app.frame('/share', async (c) => {
     return c.res({
       image: (
         <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          width: '1200px', 
-          height: '628px', 
-          backgroundColor: '#f0e6fa',
-          color: 'black',
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
           fontFamily: 'Arial, sans-serif'
         }}>
           <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: Incomplete data provided</h1>
@@ -287,6 +288,7 @@ app.frame('/share', async (c) => {
 
   const userInfo = {
     username,
+    fid,
     totalHam,
     rank,
     hamScore,
@@ -295,6 +297,9 @@ app.frame('/share', async (c) => {
     percentTipped,
     floatyBalance
   };
+
+  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and I've tipped ${userInfo.percentTipped}% today. Check your @ham.xyz stats. Frame by @goldie`;
+  const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
 
   return c.res({
     image: (
@@ -311,7 +316,7 @@ app.frame('/share', async (c) => {
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
           <div style={{display: 'flex', flexDirection: 'column'}}>
             <span style={{fontSize: '80px',}}>@{userInfo.username}</span>
-            <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {userInfo.rank}</span>
+            <span style={{fontSize: '30px',}}>FID: {userInfo.fid} | Rank: {userInfo.rank}</span>
           </div>
         </div>
         
@@ -348,7 +353,8 @@ app.frame('/share', async (c) => {
       </div>
     ),
     intents: [
-      <Button action="/check">Check Your Stats</Button>
+      <Button action="/check">Check Your Stats</Button>,
+      <Button.Link href={farcasterShareURL}>Share on Warpcast</Button.Link>,
     ]
   });
 });
