@@ -167,14 +167,15 @@ app.frame('/check', async (c) => {
 
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', userFid.toString());
-    shareUrl.searchParams.append('totalHam', totalHam);
+    shareUrl.searchParams.append('totalHam', totalHam.toString());
     shareUrl.searchParams.append('rank', rank.toString());
-    shareUrl.searchParams.append('hamScore', hamScore);
-    shareUrl.searchParams.append('todaysAllocation', todaysAllocation);
-    shareUrl.searchParams.append('totalTippedToday', totalTippedToday);
-    shareUrl.searchParams.append('percentTipped', percentTipped);
+    shareUrl.searchParams.append('hamScore', hamScore.toString());
+    shareUrl.searchParams.append('todaysAllocation', todaysAllocation.toString());
+    shareUrl.searchParams.append('totalTippedToday', totalTippedToday.toString());
+    shareUrl.searchParams.append('percentTipped', percentTipped.toString());
     shareUrl.searchParams.append('username', username);
-    shareUrl.searchParams.append('floatyBalance', floatyBalanceValue);
+    shareUrl.searchParams.append('floatyBalance', floatyBalanceValue.toString());
+
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
