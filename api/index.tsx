@@ -45,8 +45,17 @@ export const app = new Frog({
 const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
-const backgroundImage = "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
+const backgroundImages = [
+  "https://bafybeic7lmq2w2ona2wzw473ogjv5zte42z36uwvi3oibu2cqf2c5eimge.ipfs.w3s.link/check%20frame%2030.png",
+  "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png",
+  // Add more IPFS background URLs here
+];
+
 const errorBackgroundImage = "https://bafybeiheknxnjt2zbnue4wrxed5igyxlntp6cc3jqkogqy7eggoestrh5i.ipfs.w3s.link/check%20frame%2027.png";
+
+function getRandomBackground() {
+  return backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+}
 
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
@@ -166,7 +175,8 @@ app.frame('/check', async (c) => {
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
-    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&username=${encodeURIComponent(username)}`;
+    const backgroundImage = getRandomBackground();
+    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&username=${encodeURIComponent(username)}&bg=${encodeURIComponent(backgroundImage)}`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
     return c.res({
@@ -252,9 +262,12 @@ app.frame('/check', async (c) => {
   }
 });
 
+// The /share frame would start here
+
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
   const username = c.req.query('username') || 'Unknown';
+  const backgroundImage = c.req.query('bg') || getRandomBackground();
 
   if (!fid) {
     return c.res({
