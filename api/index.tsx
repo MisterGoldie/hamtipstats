@@ -45,8 +45,17 @@ export const app = new Frog({
 const HAM_API_URL = 'https://farcaster.dep.dev/ham/user';
 const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 
-const backgroundImage = "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
+const backgroundImages = [
+  "https://bafybeic7lmq2w2ona2wzw473ogjv5zte42z36uwvi3oibu2cqf2c5eimge.ipfs.w3s.link/check%20frame%2030.png",
+  "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png",
+  // Add more IPFS background URLs here
+];
+
 const errorBackgroundImage = "https://bafybeiheknxnjt2zbnue4wrxed5igyxlntp6cc3jqkogqy7eggoestrh5i.ipfs.w3s.link/check%20frame%2027.png";
+
+function getRandomBackground(): string {
+  return backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+}
 
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
@@ -115,6 +124,7 @@ app.frame('/', () => {
   })
 })
 
+
 app.frame('/check', async (c) => {
   console.log('Entering /check frame');
   const { fid } = c.frameData ?? {};
@@ -166,7 +176,11 @@ app.frame('/check', async (c) => {
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
-    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&username=${encodeURIComponent(username)}`;
+    const backgroundImage = getRandomBackground();
+    
+    // Simplified share URL construction
+    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&username=${encodeURIComponent(username)}&bg=${encodeURIComponent(backgroundImage)}`;
+    
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
     return c.res({
@@ -252,133 +266,7 @@ app.frame('/check', async (c) => {
   }
 });
 
-app.frame('/share', async (c) => {
-  const fid = c.req.query('fid');
-  const username = c.req.query('username') || 'Unknown';
 
-  if (!fid) {
-    return c.res({
-      image: (
-        <div style={{ 
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontFamily: 'Arial, sans-serif'
-        }}>
-          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: Incomplete data provided</h1>
-        </div>
-      ),
-      intents: [
-        <Button action="/check">Check Your Stats</Button>
-      ]
-    });
-  }
-
-  try {
-    const [hamUserData, floatyBalance] = await Promise.all([
-      getHamUserData(fid.toString()),
-      getFloatyBalance(fid.toString())
-    ]);
-
-    const rank = hamUserData?.rank || 'N/A';
-    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : 'N/A';
-    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
-    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : 'N/A';
-    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : 'N/A';
-    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
-      ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
-      : 'N/A';
-    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
-
-    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
-
-    return c.res({
-      image: (
-        <div style={{ 
-          backgroundImage: `url(${backgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '20px',
-          color: 'white',
-          fontWeight: 'bold',
-        }}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-            <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px',}}>@{username}</span>
-              <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {rank}</span>
-            </div>
-          </div>
-          
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Total $HAM:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>HAM Score:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Today's Allocation:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Total Tipped Today:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Floaty Balance:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Percent Tipped:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
-            </div>
-          </div>
-          
-          <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
-            $HAM Token Tracker
-          </div>
-        </div>
-      ),
-      intents: [
-        <Button action="/check">Check Your Stats</Button>,
-        <Button.Link href={farcasterShareURL}>Share on Warpcast</Button.Link>,
-      ]
-    });
-  } catch (error) {
-    console.error('Error in share frame:', error);
-    return c.res({
-      image: (
-        <div style={{
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          fontSize: '40px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-        }}>
-          <div>Error retrieving $HAM stats</div>
-        </div>
-      ),
-      intents: [
-        <Button action="/check">Try Again</Button>
-      ]
-    });
-  }
-});
 
 export const GET = handle(app);
 export const POST = handle(app);
