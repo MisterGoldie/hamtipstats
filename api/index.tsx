@@ -3,6 +3,7 @@
 import { Button, Frog } from 'frog'
 import { handle } from 'frog/vercel'
 import { neynar } from 'frog/middlewares'
+import { Buffer } from 'buffer';
 
 interface HamUserData {
   balance: { ham: string };
@@ -54,9 +55,12 @@ const backgroundImages = [
 
 const errorBackgroundImage = "https://bafybeiheknxnjt2zbnue4wrxed5igyxlntp6cc3jqkogqy7eggoestrh5i.ipfs.w3s.link/check%20frame%2027.png";
 
+
 function getRandomBackground() {
-  return backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+  const bg = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+  return Buffer.from(bg).toString('base64');
 }
+
 
 function formatLargeNumber(strNumber: string): string {
   const number = Number(strNumber) / 1e18;
@@ -177,13 +181,20 @@ app.frame('/check', async (c) => {
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
     const backgroundImage = getRandomBackground();
-    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&username=${encodeURIComponent(username)}&bg=${encodeURIComponent(backgroundImage)}`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+    
+    // Construct the share URL with base64 encoded background
+    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
+    shareUrl.searchParams.append('fid', fid.toString());
+    shareUrl.searchParams.append('username', encodeURIComponent(username));
+    shareUrl.searchParams.append('bg', backgroundImage);
+    
+    const encodedShareUrl = encodeURIComponent(shareUrl.toString());
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodedShareUrl}`;
 
     return c.res({
       image: (
         <div style={{
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(data:image/png;base64,${backgroundImage})`,
           width: '1200px',
           height: '628px',
           display: 'flex',
@@ -263,11 +274,9 @@ app.frame('/check', async (c) => {
   }
 });
 
-// The /share frame would start here
-
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
-  const username = c.req.query('username') || 'Unknown';
+  const username = decodeURIComponent(c.req.query('username') || 'Unknown');
   const backgroundImage = c.req.query('bg') || getRandomBackground();
 
   if (!fid) {
@@ -315,7 +324,7 @@ app.frame('/share', async (c) => {
     return c.res({
       image: (
         <div style={{ 
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(data:image/png;base64,${backgroundImage})`,
           width: '1200px',
           height: '628px',
           display: 'flex',
