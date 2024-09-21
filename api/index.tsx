@@ -165,9 +165,19 @@ app.frame('/check', async (c) => {
       : 'N/A';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
 
-    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and i've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
-    const shareUrl = `https://hamtipstats.vercel.app/api/share?fid=${fid}&totalHam=${encodeURIComponent(totalHam)}&rank=${rank}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&percentTipped=${percentTipped}&username=${encodeURIComponent(username)}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
+    shareUrl.searchParams.append('fid', userFid.toString());
+    shareUrl.searchParams.append('totalHam', totalHam);
+    shareUrl.searchParams.append('rank', rank.toString());
+    shareUrl.searchParams.append('hamScore', hamScore);
+    shareUrl.searchParams.append('todaysAllocation', todaysAllocation);
+    shareUrl.searchParams.append('totalTippedToday', totalTippedToday);
+    shareUrl.searchParams.append('percentTipped', percentTipped);
+    shareUrl.searchParams.append('username', username);
+    shareUrl.searchParams.append('floatyBalance', floatyBalanceValue);
+
+    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
 
     return c.res({
       image: (
@@ -263,7 +273,6 @@ app.frame('/share', async (c) => {
   const username = c.req.query('username') || 'Unknown';
   const floatyBalance = c.req.query('floatyBalance') || 'N/A';
 
-  // Use a fixed background image to reduce complexity
   const backgroundImage = "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
 
   const shareText = `Check out my $HAM stats! I have ${totalHam} $HAM. Frame by @goldie`;
@@ -281,13 +290,13 @@ app.frame('/share', async (c) => {
         fontWeight: 'bold',
         fontFamily: 'Arial, sans-serif',
       }}>
-        <div style={{fontSize: '60px', marginBottom: '20px'}}>@{username}'s $HAM Stats</div>
+        <div style={{fontSize: '60px', marginBottom: '20px'}}>@{decodeURIComponent(username)}'s $HAM Stats</div>
         <div style={{fontSize: '30px', marginBottom: '10px'}}>FID: {fid} | Rank: {rank}</div>
         <div style={{fontSize: '40px', marginBottom: '10px'}}>Total $HAM: {totalHam}</div>
         <div style={{fontSize: '40px', marginBottom: '10px'}}>HAM Score: {hamScore}</div>
         <div style={{fontSize: '40px', marginBottom: '10px'}}>Today's Allocation: {todaysAllocation}</div>
         <div style={{fontSize: '40px', marginBottom: '10px'}}>Total Tipped Today: {totalTippedToday}</div>
-        <div style={{fontSize: '40px', marginBottom: '10px'}}>Floaty Balance: {floatyBalance}</div>
+        <div style={{fontSize: '40px', marginBottom: '10px'}}>Floaty Balance: {decodeURIComponent(floatyBalance)}</div>
         <div style={{fontSize: '40px'}}>Percent Tipped: {percentTipped}</div>
         <div style={{fontSize: '24px', marginTop: 'auto', alignSelf: 'flex-end'}}>
           $HAM Token Tracker
