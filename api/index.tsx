@@ -262,29 +262,16 @@ app.frame('/share', async (c) => {
   const percentTipped = c.req.query('percentTipped') || 'N/A';
   const username = c.req.query('username') || 'Unknown';
   const floatyBalance = c.req.query('floatyBalance') || 'N/A';
-  const backgroundImage = c.req.query('backgroundImage');
 
-  const selectedBackgroundImage = backgroundImage ?? "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
+  // Use a fixed background image to reduce complexity
+  const backgroundImage = "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
 
-  const userInfo = {
-    username,
-    fid,
-    totalHam,
-    rank,
-    hamScore,
-    todaysAllocation,
-    totalTippedToday,
-    percentTipped,
-    floatyBalance
-  };
-
-  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and I've tipped ${userInfo.percentTipped}% today. Check your /lp stats. Frame by @goldie`;
-  const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+  const shareText = `Check out my $HAM stats! I have ${totalHam} $HAM. Frame by @goldie`;
 
   return c.res({
     image: (
       <div style={{ 
-        backgroundImage: `url(${selectedBackgroundImage})`,
+        backgroundImage: `url(${backgroundImage})`,
         width: '1200px',
         height: '628px',
         display: 'flex',
@@ -292,49 +279,24 @@ app.frame('/share', async (c) => {
         padding: '20px',
         color: 'white',
         fontWeight: 'bold',
+        fontFamily: 'Arial, sans-serif',
       }}>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-          <div style={{display: 'flex', flexDirection: 'column'}}>
-            <span style={{fontSize: '80px',}}>@{userInfo.username}</span>
-            <span style={{fontSize: '30px',}}>FID: {userInfo.fid} | Rank: {userInfo.rank}</span>
-          </div>
-        </div>
-        
-        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-            <span>Total $HAM:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.totalHam}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-            <span>HAM Score:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.hamScore}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-            <span>Today's Allocation:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.todaysAllocation}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-            <span>Total Tipped Today:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.totalTippedToday}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-            <span>Floaty Balance:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.floatyBalance}</span>
-          </div>
-          <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-            <span>Percent Tipped:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.percentTipped}</span>
-          </div>
-        </div>
-        
-        <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
+        <div style={{fontSize: '60px', marginBottom: '20px'}}>@{username}'s $HAM Stats</div>
+        <div style={{fontSize: '30px', marginBottom: '10px'}}>FID: {fid} | Rank: {rank}</div>
+        <div style={{fontSize: '40px', marginBottom: '10px'}}>Total $HAM: {totalHam}</div>
+        <div style={{fontSize: '40px', marginBottom: '10px'}}>HAM Score: {hamScore}</div>
+        <div style={{fontSize: '40px', marginBottom: '10px'}}>Today's Allocation: {todaysAllocation}</div>
+        <div style={{fontSize: '40px', marginBottom: '10px'}}>Total Tipped Today: {totalTippedToday}</div>
+        <div style={{fontSize: '40px', marginBottom: '10px'}}>Floaty Balance: {floatyBalance}</div>
+        <div style={{fontSize: '40px'}}>Percent Tipped: {percentTipped}</div>
+        <div style={{fontSize: '24px', marginTop: 'auto', alignSelf: 'flex-end'}}>
           $HAM Token Tracker
         </div>
       </div>
     ),
     intents: [
       <Button action="/check">Check Your Stats</Button>,
-      <Button.Link href={farcasterShareURL}>Share</Button.Link>,
+      <Button.Link href={`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`}>Share on Warpcast</Button.Link>,
     ]
   });
 });
