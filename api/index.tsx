@@ -255,9 +255,9 @@ app.frame('/share', async (c) => {
   const percentTipped = c.req.query('percentTipped') || 'N/A';
   const username = c.req.query('username') || 'Unknown';
   const floatyBalance = c.req.query('floatyBalance') || 'N/A';
-
-  // Use the same background image as in the /check frame
-  const backgroundImage = "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
+  
+  // Use the backgroundImage from query params if provided, otherwise use a default
+  const backgroundImage = c.req.query('backgroundImage') || "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
 
   const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
 
