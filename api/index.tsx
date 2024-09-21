@@ -253,38 +253,18 @@ app.frame('/check', async (c) => {
 });
 
 app.frame('/share', async (c) => {
-  const fid = c.req.query('fid');
-  const totalHam = c.req.query('totalHam');
-  const rank = c.req.query('rank');
-  const hamScore = c.req.query('hamScore');
-  const todaysAllocation = c.req.query('todaysAllocation');
-  const totalTippedToday = c.req.query('totalTippedToday');
-  const percentTipped = c.req.query('percentTipped');
-  const username = c.req.query('username');
-  const floatyBalance = c.req.query('floatyBalance');
-  
-  if (!fid || !totalHam || !rank || !hamScore || !todaysAllocation || !totalTippedToday || !percentTipped || !username || !floatyBalance) {
-    return c.res({
-      image: (
-        <div style={{ 
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontFamily: 'Arial, sans-serif'
-        }}>
-          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: Incomplete data provided</h1>
-        </div>
-      ),
-      intents: [
-        <Button action="/check">Check Your Stats</Button>
-      ]
-    });
-  }
+  const fid = c.req.query('fid') || 'N/A';
+  const totalHam = c.req.query('totalHam') || 'N/A';
+  const rank = c.req.query('rank') || 'N/A';
+  const hamScore = c.req.query('hamScore') || 'N/A';
+  const todaysAllocation = c.req.query('todaysAllocation') || 'N/A';
+  const totalTippedToday = c.req.query('totalTippedToday') || 'N/A';
+  const percentTipped = c.req.query('percentTipped') || 'N/A';
+  const username = c.req.query('username') || 'Unknown';
+  const floatyBalance = c.req.query('floatyBalance') || 'N/A';
+  const backgroundImage = c.req.query('backgroundImage');
+
+  const selectedBackgroundImage = backgroundImage ?? "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png";
 
   const userInfo = {
     username,
@@ -298,13 +278,13 @@ app.frame('/share', async (c) => {
     floatyBalance
   };
 
-  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and i've tipped ${userInfo.percentTipped}% today. Check your /lp stats. Frame by @goldie`;
+  const shareText = `I have ${userInfo.totalHam} $HAM with a rank of ${userInfo.rank}! My HAM Score is ${userInfo.hamScore} and I've tipped ${userInfo.percentTipped}% today. Check your /lp stats. Frame by @goldie`;
   const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
 
   return c.res({
     image: (
       <div style={{ 
-        backgroundImage: `url(${backgroundImage})`,
+        backgroundImage: `url(${selectedBackgroundImage})`,
         width: '1200px',
         height: '628px',
         display: 'flex',
@@ -343,7 +323,7 @@ app.frame('/share', async (c) => {
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
             <span>Percent Tipped:</span>
-            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.percentTipped}%</span>
+            <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{userInfo.percentTipped}</span>
           </div>
         </div>
         
