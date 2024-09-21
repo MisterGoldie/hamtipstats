@@ -371,7 +371,7 @@ app.frame('/share', async (c) => {
       ),
       intents: [
         <Button action="/check">Check Your Stats</Button>,
-        <Button.Link href={farcasterShareURL}>Share on Warpcast</Button.Link>,
+        <Button.Link href={farcasterShareURL}>Share</Button.Link>,
       ]
     });
   } catch (error) {
