@@ -212,7 +212,7 @@ app.frame('/check', async (c) => {
             </div>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '40px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
               <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
@@ -338,35 +338,31 @@ app.frame('/share', async (c) => {
             </div>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '33px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalHam}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>HAM Score:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{hamScore}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{hamScore}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Today's Allocation:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{todaysAllocation}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{todaysAllocation}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total Tipped Today:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{totalTippedToday}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalTippedToday}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Floaty Balance:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{floatyBalanceValue}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{floatyBalanceValue}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Percent Tipped:</span>
-              <span style={{fontWeight: '900', minWidth: '150px', textAlign: 'right'}}>{percentTipped}%</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
             </div>
-          </div>
-          
-          <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
-            $HAM Token Tracker
           </div>
         </div>
       ),
