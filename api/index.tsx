@@ -80,11 +80,15 @@ async function getHamUserData(fid: string): Promise<HamUserData> {
   }
 }
 
-async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
+async function getFloatyBalance(fid: string): Promise<FloatyBalance | null> {
   try {
     const url = `${FLOATY_API_URL}/${fid}`;
     console.log('Fetching Floaty balance from:', url);
     const response = await fetch(url);
+    if (response.status === 404) {
+      console.log('No Floaty balance found for user');
+      return null;
+    }
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -93,7 +97,7 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance> {
     return data;
   } catch (error) {
     console.error('Error in getFloatyBalance:', error);
-    throw error;
+    return null;
   }
 }
 
@@ -172,8 +176,8 @@ app.frame('/check', async (c) => {
     const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
     const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
     const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
-      ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
-      : '0  🦄';
+      ? `${floatyBalance.balances[0].total} 🦄`
+      : '0 🦄';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
