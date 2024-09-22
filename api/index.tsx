@@ -166,15 +166,15 @@ app.frame('/check', async (c) => {
 
     const username = hamUserData?.casterToken?.user?.username || displayName || 'Unknown';
     const userFid = hamUserData?.casterToken?.user?.fid || fid;
-    const rank = hamUserData?.rank || 'N/A';
-    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : 'N/A';
-    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
-    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : 'N/A';
-    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : 'N/A';
+    const rank = hamUserData?.rank ?? 'N/A';
+    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
+    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
+    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
+    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
     const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
       ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
-      : 'N/A';
-    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
+      : '0  🦄';
+    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
     const backgroundImage = getRandomBackground();
@@ -246,7 +246,7 @@ app.frame('/check', async (c) => {
       ],
     });
   } catch (error) {
-    console.error('Error in check frame:', error);
+    console.error('Error fetching data:', error);
     return c.res({
       image: (
         <div style={{
@@ -261,11 +261,11 @@ app.frame('/check', async (c) => {
           fontWeight: 'bold',
           textAlign: 'center',
         }}>
-          <div>Error retrieving $HAM stats</div>
+          <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
       ),
       intents: [
-        <Button action="/">Try Again</Button>
+        <Button action="/check">Try Again</Button>
       ],
     });
   }
@@ -305,15 +305,15 @@ app.frame('/share', async (c) => {
       getFloatyBalance(fid.toString())
     ]);
 
-    const rank = hamUserData?.rank || 'N/A';
-    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : 'N/A';
-    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : 'N/A';
-    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : 'N/A';
-    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : 'N/A';
+    const rank = hamUserData?.rank ?? 'N/A';
+    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
+    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
+    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
+    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
     const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
-      ? `${floatyBalance.balances[0].total} ${floatyBalance.balances[0].emoji}`
-      : 'N/A';
-    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : 'N/A';
+      ? `${floatyBalance.balances[0].total} 🦄`
+      : '0 🦄';
+    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats. Frame by @goldie`;
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
@@ -375,7 +375,7 @@ app.frame('/share', async (c) => {
       ]
     });
   } catch (error) {
-    console.error('Error in share frame:', error);
+    console.error('Error fetching data:', error);
     return c.res({
       image: (
         <div style={{
@@ -390,7 +390,7 @@ app.frame('/share', async (c) => {
           fontWeight: 'bold',
           textAlign: 'center',
         }}>
-          <div>Error retrieving $HAM stats</div>
+          <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
       ),
       intents: [
@@ -399,7 +399,6 @@ app.frame('/share', async (c) => {
     });
   }
 });
-
 
 
 export const GET = handle(app);
