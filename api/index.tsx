@@ -188,6 +188,7 @@ app.frame('/check', async (c) => {
     // Construct the share URL as a Farcaster frame
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', fid.toString());
+    shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
     
     // Construct the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
@@ -273,6 +274,7 @@ app.frame('/check', async (c) => {
 
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
+  const backgroundImage = decodeURIComponent(c.req.query('bg') || '');
 
   if (!fid) {
     return c.res({
@@ -313,8 +315,6 @@ app.frame('/share', async (c) => {
       ? `${floatyBalance.balances[0].total} 🦄`
       : '0 🦄';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
-
-    const backgroundImage = getRandomBackground();
 
     return c.res({
       image: (
@@ -399,4 +399,3 @@ app.frame('/share', async (c) => {
 
 export const GET = handle(app);
 export const POST = handle(app);
-
