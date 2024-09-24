@@ -51,7 +51,6 @@ const backgroundImages = [
   "https://bafybeidkgdsrviqq3kdbfgw3z5pjiusduqwg4kidq665onkhbb3esv36ry.ipfs.w3s.link/check%20frame%2033.png",
   "https://bafybeihvjzzmjdjfickrzly3u4rzvgpjop4qi67g3d7wwnop7rzmbeb2je.ipfs.w3s.link/check%20frame%2032.png",
   "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png",
-  // Add more IPFS background URLs here
 ];
 
 const errorBackgroundImage = "https://bafybeiheknxnjt2zbnue4wrxed5igyxlntp6cc3jqkogqy7eggoestrh5i.ipfs.w3s.link/check%20frame%2027.png";
@@ -65,6 +64,42 @@ function formatLargeNumber(strNumber: string): string {
   return number.toFixed(2);
 }
 
+async function getAirstackUserDetails(fid: string) {
+  const AIRSTACK_API_URL = 'https://api.airstack.xyz/gql';
+  const AIRSTACK_API_KEY = '103ba30da492d4a7e89e7026a6d3a234e';
+
+  const query = `
+    query GetFarcasterUserDetails {
+      Socials(input: {filter: {dappName: {_eq: farcaster}, userId: {_eq: "${fid}"}}, blockchain: ethereum, limit: 1}) {
+        Social {
+          profileName
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRSTACK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': AIRSTACK_API_KEY,
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Airstack API request failed');
+    }
+
+    const data = await response.json();
+    return data.data.Socials.Social[0]?.profileName || null;
+  } catch (error) {
+    console.error('Error fetching Airstack user details:', error);
+    return null;
+  }
+}
+
 async function getHamUserData(fid: string): Promise<HamUserData> {
   try {
     const url = `${HAM_API_URL}/${fid}`;
@@ -75,6 +110,17 @@ async function getHamUserData(fid: string): Promise<HamUserData> {
     }
     const data = await response.json();
     console.log('Received HAM user data:', data);
+    
+    // If the username is not available in HAM data, fetch it from Airstack
+    if (!data.casterToken?.user?.username) {
+      const airstackUsername = await getAirstackUserDetails(fid);
+      if (airstackUsername) {
+        data.casterToken = data.casterToken || {};
+        data.casterToken.user = data.casterToken.user || {};
+        data.casterToken.user.username = airstackUsername;
+      }
+    }
+    
     return data;
   } catch (error) {
     console.error('Error in getHamUserData:', error);
@@ -131,7 +177,6 @@ app.frame('/', () => {
   })
 })
 
-
 app.frame('/check', async (c) => {
   console.log('Entering /check frame');
   const { fid } = c.frameData ?? {};
@@ -170,7 +215,7 @@ app.frame('/check', async (c) => {
     console.log('HAM User Data:', hamUserData);
     console.log('Floaty Balance:', floatyBalance);
 
-    const username = hamUserData?.casterToken?.user?.username || displayName || 'Unknown';
+    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || displayName || 'Unknown';
     const userFid = hamUserData?.casterToken?.user?.fid || fid;
     const rank = hamUserData?.rank ?? 'N/A';
     const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
@@ -305,7 +350,7 @@ app.frame('/share', async (c) => {
       getFloatyBalance(fid)
     ]);
 
-    const username = hamUserData?.casterToken?.user?.username || 'Unknown';
+    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid) || 'Unknown';
     const rank = hamUserData?.rank ?? 'N/A';
     const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
     const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
@@ -397,6 +442,7 @@ app.frame('/share', async (c) => {
   }
 });
 
-export const HEAD = handle(app)
+// Export the handlers
+export const HEAD = handle(app);
 export const GET = handle(app);
 export const POST = handle(app);
