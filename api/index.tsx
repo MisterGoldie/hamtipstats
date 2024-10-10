@@ -214,6 +214,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div>Unable to retrieve user information: No FID provided</div>
         </div>
@@ -266,6 +267,7 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -323,6 +325,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
@@ -389,6 +392,7 @@ app.frame('/share', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -448,6 +452,7 @@ app.frame('/share', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
