@@ -169,33 +169,19 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance | null> {
 
 app.frame('/', (c) => {
   const gifUrl = 'https://bafybeihtvzswbyb6gdyh32tofvvw6z72f5qvqfnfei6ir3kqx5426xwo7q.ipfs.w3s.link/IMG_8059.GIF'
-  const baseUrl = 'https://hamtipstats.vercel.app'
 
   return c.res({
     image: (
       <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
         width: '100%',
         height: '100%',
-        fontFamily: '"Hanalei Fill", cursive',
         backgroundImage: `url(${gifUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-      }}>
-        <h1 style={{
-          color: 'white',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
-          textAlign: 'center',
-        }}>
-          $HAM Token Tracker. Check your $HAM and Floaty balance by @goldie
-        </h1>
-      </div>
+      }}/>
     ),
     intents: [
-      <Button action={`${baseUrl}/api/check`}>Check $HAM stats</Button>,
+      <Button action="/check">Check $HAM stats</Button>,
     ],
   });
 });
