@@ -167,24 +167,32 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance | null> {
   }
 }
 
-app.frame('/', (c) => {
+app.frame('/', () => {
   const gifUrl = 'https://bafybeihtvzswbyb6gdyh32tofvvw6z72f5qvqfnfei6ir3kqx5426xwo7q.ipfs.w3s.link/IMG_8059.GIF'
+  const baseUrl = 'https://hamtipstats.vercel.app'
 
-  return c.res({
-    image: (
-      <div style={{
-        width: '100%',
-        height: '100%',
-        backgroundImage: `url(${gifUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}/>
-    ),
-    intents: [
-      <Button action="/check">Check $HAM stats</Button>,
-    ],
-  });
-});
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>$HAM Token Tracker</title>
+      <meta property="fc:frame" content="vNext">
+      <meta property="fc:frame:image" content="${gifUrl}">
+      <meta property="fc:frame:button:1" content="Check $HAM stats">
+      <meta property="fc:frame:button:1:action" content="post">
+      <meta property="fc:frame:post_url" content="${baseUrl}/api/check">
+    </head>
+    <body>
+    </body>
+    </html>
+  `
+
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html' },
+  })
+})
 
 app.frame('/check', async (c) => {
   console.log('Entering /check frame');
