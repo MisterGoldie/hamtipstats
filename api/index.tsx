@@ -38,7 +38,7 @@ export const app = new Frog({
     height: 628,
     fonts: [
       {
-        name: 'Mansalva',
+        name: 'Sedgwick Ave Display',
         source: 'google',
         weight: 400,
       },
