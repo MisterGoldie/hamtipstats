@@ -38,7 +38,7 @@ export const app = new Frog({
     height: 628,
     fonts: [
       {
-        name: 'Hanalei Fill',
+        name: 'Mansalva',
         source: 'google',
         weight: 400,
       },
