@@ -33,7 +33,17 @@ interface FloatyBalance {
 
 export const app = new Frog({
   basePath: '/api',
-  imageOptions: { width: 1200, height: 628 },
+  imageOptions: {
+    width: 1200,
+    height: 628,
+    fonts: [
+      {
+        name: 'Hanalei Fill',
+        source: 'google',
+        weight: 400,
+      },
+    ],
+  },
   title: '$HAM Token Tracker',
   hub: {
     apiUrl: "https://hubs.airstack.xyz",
@@ -157,33 +167,38 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance | null> {
   }
 }
 
-app.frame('/', () => {
+app.frame('/', (c) => {
   const gifUrl = 'https://bafybeihtvzswbyb6gdyh32tofvvw6z72f5qvqfnfei6ir3kqx5426xwo7q.ipfs.w3s.link/IMG_8059.GIF'
   const baseUrl = 'https://hamtipstats.vercel.app'
 
-  const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>$HAM Token Tracker</title>
-      <meta property="fc:frame" content="vNext">
-      <meta property="fc:frame:image" content="${gifUrl}">
-      <meta property="fc:frame:button:1" content="Check $HAM stats">
-      <meta property="fc:frame:button:1:action" content="post">
-      <meta property="fc:frame:post_url" content="${baseUrl}/api/check">
-    </head>
-    <body>
-      <h1>$HAM Token Tracker. Check your $HAM and Floaty balance by @goldie</h1>
-    </body>
-    </html>
-  `
-
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html' },
-  })
-})
+  return c.res({
+    image: (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        fontFamily: '"Hanalei Fill", cursive',
+        backgroundImage: `url(${gifUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}>
+        <h1 style={{
+          color: 'white',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+          textAlign: 'center',
+        }}>
+          $HAM Token Tracker. Check your $HAM and Floaty balance by @goldie
+        </h1>
+      </div>
+    ),
+    intents: [
+      <Button action={`${baseUrl}/api/check`}>Check $HAM stats</Button>,
+    ],
+  });
+});
 
 app.frame('/check', async (c) => {
   console.log('Entering /check frame');
