@@ -274,7 +274,7 @@ app.frame('/check', async (c) => {
             </div>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '39px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
               <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
