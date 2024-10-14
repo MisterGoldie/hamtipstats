@@ -428,7 +428,6 @@ app.frame('/share', async (c) => {
           </div>
           
           <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
-            $HAM Token Tracker
           </div>
         </div>
       ),
