@@ -66,6 +66,8 @@ const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 const backgroundImages = [
   "https://bafybeic7lmq2w2ona2wzw473ogjv5zte42z36uwvi3oibu2cqf2c5eimge.ipfs.w3s.link/check%20frame%2030.png",
   "https://bafybeibhvagxrzv5wqof3zagro3yn4h4gyzjujibk5bbe7tn7e76ogyday.ipfs.w3s.link/check%20frame%2029.png",
+  "https://bafybeia2z53efo36qcof5v6kxwdgerp6wbbaiflz4hb6fyscxjemr5fqv4.ipfs.w3s.link/check%20frame%2035.png",
+  "https://bafybeignjyl4q6hl74liofccrkgmgpus5gtqq5kux2vfbtulsotgtnp75y.ipfs.w3s.link/check%20frame%2034.png",
   "https://bafybeihvjzzmjdjfickrzly3u4rzvgpjop4qi67g3d7wwnop7rzmbeb2je.ipfs.w3s.link/check%20frame%2032.png",
   "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png",
 ];
