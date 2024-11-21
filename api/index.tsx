@@ -197,6 +197,7 @@ app.frame('/', () => {
 })
 
 app.frame('/check', async (c) => {
+  console.log('Entering /check frame');
   const { fid } = c.frameData ?? {};
   const { displayName } = c.var.interactor || {};
 
@@ -231,9 +232,11 @@ app.frame('/check', async (c) => {
       getHamUserData(fid.toString()),
       getFloatyBalance(fid.toString())
     ]);
+    console.log('HAM User Data:', hamUserData);
+    console.log('Floaty Balance:', floatyBalance);
 
-    // Format all the data
     const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || displayName || 'Unknown';
+    const userFid = hamUserData?.casterToken?.user?.fid || fid;
     const rank = hamUserData?.rank ?? 'N/A';
     const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
     const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
@@ -243,25 +246,16 @@ app.frame('/check', async (c) => {
       ? `${floatyBalance.balances[0].total} 🦄`
       : '0 🦄';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
-    
-    const backgroundImage = getRandomBackground();
-    // Create share URL with properly encoded parameters
-    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
-    // Properly encode the entire background URL including spaces
-    const encodedBg = encodeURIComponent(backgroundImage);
-    shareUrl.searchParams.set('bg', encodedBg);
-    // Add remaining params
-    shareUrl.searchParams.set('fid', fid.toString());
-    shareUrl.searchParams.set('username', encodeURIComponent(username));
-    shareUrl.searchParams.set('rank', rank.toString());
-    shareUrl.searchParams.set('totalHam', totalHam);
-    shareUrl.searchParams.set('hamScore', hamScore);
-    shareUrl.searchParams.set('todaysAllocation', todaysAllocation);
-    shareUrl.searchParams.set('totalTippedToday', totalTippedToday);
-    shareUrl.searchParams.set('floatyBalance', encodeURIComponent(floatyBalanceValue));
-    shareUrl.searchParams.set('percentTipped', percentTipped);
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
+    const backgroundImage = getRandomBackground();
+    
+    // Construct the share URL as a Farcaster frame
+    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
+    shareUrl.searchParams.append('fid', fid.toString());
+    shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
+    
+    // Construct the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
 
     return c.res({
@@ -275,13 +269,12 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive',
-          position: 'relative',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
               <span style={{fontSize: '76px',}}>@{username}</span>
-              <span style={{fontSize: '38px',}}>FID: {fid} | Rank: {rank}</span>
+              <span style={{fontSize: '38px',}}>FID: {userFid} | Rank: {rank}</span>
             </div>
           </div>
           
@@ -346,127 +339,130 @@ app.frame('/check', async (c) => {
   }
 });
 
-app.frame('/share', (c) => {
-  // Get and validate background image
-  const encodedBg = c.req.query('bg');
-  let backgroundImage;
-  try {
-    backgroundImage = decodeURIComponent(encodedBg || '');
-  } catch (e) {
-    console.error('Failed to decode background URL:', e);
-    backgroundImage = backgroundImages[0];
-  }
-
-  // Validate the decoded URL
-  const validBackgrounds = [...backgroundImages];
-  if (!validBackgrounds.includes(backgroundImage)) {
-    console.warn('Invalid background:', backgroundImage);
-    backgroundImage = backgroundImages[0];
-  }
-
-  // Get and decode other parameters
-  let username;
-  try {
-    username = decodeURIComponent(c.req.query('username') || 'Unknown');
-  } catch (e) {
-    username = 'Unknown';
-  }
-
+app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
-  const rank = c.req.query('rank') || 'N/A';
-  const totalHam = c.req.query('totalHam') || '0.00';
-  const hamScore = c.req.query('hamScore') || '0.00';
-  const todaysAllocation = c.req.query('todaysAllocation') || '0.00';
-  const totalTippedToday = c.req.query('totalTippedToday') || '0.00';
-  
-  let floatyBalance;
-  try {
-    floatyBalance = decodeURIComponent(c.req.query('floatyBalance') || '0 🦄');
-  } catch (e) {
-    floatyBalance = '0 🦄';
-  }
-  
-  const percentTipped = c.req.query('percentTipped') || '0.00';
+  const backgroundImage = decodeURIComponent(c.req.query('bg') || '');
 
-  console.log('Share Route Data:', {
-    backgroundImage,
-    username,
-    fid,
-    rank,
-    totalHam,
-    hamScore,
-    todaysAllocation,
-    totalTippedToday,
-    floatyBalance,
-    percentTipped
-  });
-
-  return c.res({
-    image: (
-      <div style={{
-        backgroundImage: `url(${backgroundImage})`,
-        width: '1200px',
-        height: '628px',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '20px',
-        color: 'white',
-        fontWeight: 'bold',
-        fontFamily: '"Finger Paint", cursive',
-        position: 'relative',
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          zIndex: 1,
-        }} />
-        
-        <div style={{
-          position: 'relative',
-          zIndex: 2,
+  if (!fid) {
+    return c.res({
+      image: (
+        <div style={{ 
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontFamily: 'Arial, sans-serif'
+        }}>
+          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: No FID provided</h1>
+        </div>
+      ),
+      intents: [
+        <Button action="/check">Check Your Stats</Button>
+      ]
+    });
+  }
+
+  try {
+    const [hamUserData, floatyBalance] = await Promise.all([
+      getHamUserData(fid),
+      getFloatyBalance(fid)
+    ]);
+
+    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid) || 'Unknown';
+    const rank = hamUserData?.rank ?? 'N/A';
+    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
+    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
+    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
+    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
+    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
+      ? `${floatyBalance.balances[0].total} 🦄`
+      : '0 🦄';
+    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
+
+    return c.res({
+      image: (
+        <div style={{ 
+          backgroundImage: `url(${backgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '20px',
+          color: 'white',
+          fontWeight: 'bold',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '76px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>@{username}</span>
-              <span style={{fontSize: '38px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>FID: {fid} | Rank: {rank}</span>
+              <span style={{fontSize: '80px',}}>@{username}</span>
+              <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {rank}</span>
             </div>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
-            {[
-              ['Total $HAM:', totalHam],
-              ['HAM Score:', hamScore],
-              ['Today\'s Allocation:', todaysAllocation],
-              ['Total Tipped Today:', totalTippedToday],
-              ['Floaty Balance:', floatyBalance],
-              ['Percent Tipped:', `${percentTipped}%`],
-            ].map(([label, value]) => (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                width: '100%',
-                marginBottom: '10px',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-              }}>
-                <span>{label}</span>
-                <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{value}</span>
-              </div>
-            ))}
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '40px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Total $HAM:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>HAM Score:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{hamScore}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Today's Allocation:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{todaysAllocation}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Total Tipped Today:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalTippedToday}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Floaty Balance:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{floatyBalanceValue}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Percent Tipped:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
+            </div>
+          </div>
+          
+          <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
           </div>
         </div>
-      </div>
-    ),
-    intents: [
-      <Button action="/check">Check Your Stats</Button>
-    ]
-  });
+      ),
+      intents: [
+        <Button action="/check">Check Your Stats</Button>
+      ]
+    });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return c.res({
+      image: (
+        <div style={{
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          fontFamily: '"Finger Paint", cursive', // Add this line
+        }}>
+          <div>Stats temporarily unavailable. Please try again later.</div>
+        </div>
+      ),
+      intents: [
+        <Button action="/check">Try Again</Button>
+      ]
+    });
+  }
 });
 
 // Export the handlers
