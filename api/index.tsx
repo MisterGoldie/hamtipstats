@@ -55,8 +55,8 @@ export const app = new Frog({
   }
 }).use(
   neynar({
-    apiKey: process.env.NEYNAR_API_KEY || 'NEYNAR_FROG_FM',
-    features: ['interactor', 'cast']
+    apiKey: 'NEYNAR_FROG_FM',
+    features: ['interactor', 'cast'],
   })
 );
 
@@ -66,6 +66,9 @@ const FLOATY_API_URL = 'https://farcaster.dep.dev/floaties/balance/fid';
 const backgroundImages = [
   "https://bafybeic7lmq2w2ona2wzw473ogjv5zte42z36uwvi3oibu2cqf2c5eimge.ipfs.w3s.link/check%20frame%2030.png",
   "https://bafybeibhvagxrzv5wqof3zagro3yn4h4gyzjujibk5bbe7tn7e76ogyday.ipfs.w3s.link/check%20frame%2029.png",
+  "https://bafybeia2z53efo36qcof5v6kxwdgerp6wbbaiflz4hb6fyscxjemr5fqv4.ipfs.w3s.link/check%20frame%2035.png",
+  "https://bafybeibmobgfnfcbnhfg6uxjotrwfewgmrrrxf3f5xik3gp6bvnlwmst4q.ipfs.w3s.link/check%20frame%2037.png",
+  "https://bafybeignjyl4q6hl74liofccrkgmgpus5gtqq5kux2vfbtulsotgtnp75y.ipfs.w3s.link/check%20frame%2034.png",
   "https://bafybeihvjzzmjdjfickrzly3u4rzvgpjop4qi67g3d7wwnop7rzmbeb2je.ipfs.w3s.link/check%20frame%2032.png",
   "https://bafybeidoiml4oq4e3o4kwaa65xu3awkxhobholg7wzontmtmoxf5baxc4a.ipfs.w3s.link/check%20frame%2028.png",
 ];
@@ -194,6 +197,7 @@ app.frame('/', () => {
 })
 
 app.frame('/check', async (c) => {
+  console.log('Entering /check frame');
   const { fid } = c.frameData ?? {};
   const { displayName } = c.var.interactor || {};
 
@@ -228,9 +232,11 @@ app.frame('/check', async (c) => {
       getHamUserData(fid.toString()),
       getFloatyBalance(fid.toString())
     ]);
+    console.log('HAM User Data:', hamUserData);
+    console.log('Floaty Balance:', floatyBalance);
 
-    // Format all the data
     const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || displayName || 'Unknown';
+    const userFid = hamUserData?.casterToken?.user?.fid || fid;
     const rank = hamUserData?.rank ?? 'N/A';
     const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
     const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
@@ -240,11 +246,18 @@ app.frame('/check', async (c) => {
       ? `${floatyBalance.balances[0].total} 🦄`
       : '0 🦄';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
-    
+
+    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
     const backgroundImage = getRandomBackground();
     
-    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
+    // Construct the share URL as a Farcaster frame
+    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
+    shareUrl.searchParams.append('fid', fid.toString());
+    shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
     
+    // Construct the Farcaster share URL
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
+
     return c.res({
       image: (
         <div style={{
@@ -256,40 +269,47 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
               <span style={{fontSize: '76px',}}>@{username}</span>
-              <span style={{fontSize: '38px',}}>FID: {fid} | Rank: {rank}</span>
+              <span style={{fontSize: '38px',}}>FID: {userFid} | Rank: {rank}</span>
             </div>
           </div>
           
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
-            {[
-              ['Total $HAM:', totalHam],
-              ['HAM Score:', hamScore],
-              ['Today\'s Allocation:', todaysAllocation],
-              ['Total Tipped Today:', totalTippedToday],
-              ['Floaty Balance:', floatyBalanceValue],
-              ['Percent Tipped:', `${percentTipped}%`],
-            ].map(([label, value]) => (
-              <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-                <span>{label}</span>
-                <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{value}</span>
-              </div>
-            ))}
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Total $HAM:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>HAM Score:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{hamScore}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Today's Allocation:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{todaysAllocation}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Total Tipped Today:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalTippedToday}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Floaty Balance:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{floatyBalanceValue}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Percent Tipped:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
+            </div>
           </div>
         </div>
       ),
       intents: [
         <Button action="/">Home</Button>,
         <Button action="/check">Refresh</Button>,
-        <Button.Link 
-          href={`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(`https://hamtipstats.vercel.app/api/share?username=${encodeURIComponent(username)}&rank=${rank}&totalHam=${totalHam}&hamScore=${hamScore}&todaysAllocation=${todaysAllocation}&totalTippedToday=${totalTippedToday}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${percentTipped}&fid=${fid}&bg=${encodeURIComponent(backgroundImage)}`)}`}
-        >
-          Share
-        </Button.Link>
+        <Button.Link href={farcasterShareURL}>Share</Button.Link>,
       ],
     });
   } catch (error) {
@@ -319,86 +339,130 @@ app.frame('/check', async (c) => {
   }
 });
 
-app.frame('/share', (c) => {
-  const defaultData = {
-    username: 'Unknown',
-    rank: 'N/A',
-    totalHam: '0.00',
-    hamScore: '0.00',
-    todaysAllocation: '0.00',
-    totalTippedToday: '0.00',
-    floatyBalance: '0 🦄',
-    percentTipped: '0.00',
-    fid: '',
-    bg: backgroundImages[0]
-  };
+app.frame('/share', async (c) => {
+  const fid = c.req.query('fid');
+  const backgroundImage = decodeURIComponent(c.req.query('bg') || '');
 
-  let data;
-  try {
-    data = c.frameData?.inputText ? 
-      { ...defaultData, ...JSON.parse(c.frameData.inputText) } : 
-      defaultData;
-  } catch (e) {
-    console.error('Error parsing share data:', e);
-    data = defaultData;
+  if (!fid) {
+    return c.res({
+      image: (
+        <div style={{ 
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontFamily: 'Arial, sans-serif'
+        }}>
+          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: No FID provided</h1>
+        </div>
+      ),
+      intents: [
+        <Button action="/check">Check Your Stats</Button>
+      ]
+    });
   }
 
-  const {
-    username,
-    rank,
-    totalHam,
-    hamScore,
-    todaysAllocation,
-    totalTippedToday,
-    floatyBalance,
-    percentTipped,
-    fid,
-    bg
-  } = data;
+  try {
+    const [hamUserData, floatyBalance] = await Promise.all([
+      getHamUserData(fid),
+      getFloatyBalance(fid)
+    ]);
 
-  const backgroundImage = backgroundImages.includes(bg) ? bg : backgroundImages[0];
+    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid) || 'Unknown';
+    const rank = hamUserData?.rank ?? 'N/A';
+    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
+    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
+    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
+    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
+    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
+      ? `${floatyBalance.balances[0].total} 🦄`
+      : '0 🦄';
+    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
 
-  return c.res({
-    image: (
-      <div style={{
-        backgroundImage: `url(${backgroundImage})`,
-        width: '1200px',
-        height: '628px',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '20px',
-        color: 'white',
-        fontWeight: 'bold',
-        fontFamily: '"Finger Paint", cursive',
-      }}>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-          <div style={{display: 'flex', flexDirection: 'column'}}>
-            <span style={{fontSize: '76px',}}>@{username}</span>
-            <span style={{fontSize: '38px',}}>FID: {fid} | Rank: {rank}</span>
+    return c.res({
+      image: (
+        <div style={{ 
+          backgroundImage: `url(${backgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '20px',
+          color: 'white',
+          fontWeight: 'bold',
+          fontFamily: '"Finger Paint", cursive', // Add this line
+        }}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+            <div style={{display: 'flex', flexDirection: 'column'}}>
+              <span style={{fontSize: '80px',}}>@{username}</span>
+              <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {rank}</span>
+            </div>
+          </div>
+          
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '40px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Total $HAM:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>HAM Score:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{hamScore}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Today's Allocation:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{todaysAllocation}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Total Tipped Today:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalTippedToday}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Floaty Balance:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{floatyBalanceValue}</span>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
+              <span>Percent Tipped:</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
+            </div>
+          </div>
+          
+          <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
           </div>
         </div>
-        
-        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
-          {[
-            ['Total $HAM:', totalHam],
-            ['HAM Score:', hamScore],
-            ['Today\'s Allocation:', todaysAllocation],
-            ['Total Tipped Today:', totalTippedToday],
-            ['Floaty Balance:', floatyBalance],
-            ['Percent Tipped:', `${percentTipped}%`],
-          ].map(([label, value]) => (
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>{label}</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{value}</span>
-            </div>
-          ))}
+      ),
+      intents: [
+        <Button action="/check">Check Your Stats</Button>
+      ]
+    });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return c.res({
+      image: (
+        <div style={{
+          backgroundImage: `url(${errorBackgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          fontFamily: '"Finger Paint", cursive', // Add this line
+        }}>
+          <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
-      </div>
-    ),
-    intents: [
-      <Button action="/check">Check Your Stats</Button>
-    ]
-  });
+      ),
+      intents: [
+        <Button action="/check">Try Again</Button>
+      ]
+    });
+  }
 });
 
 // Export the handlers
