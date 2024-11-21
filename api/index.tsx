@@ -342,8 +342,17 @@ app.frame('/check', async (c) => {
   }
 });
 
-app.frame('/share', async (c) => {
-  // Get all data directly from query params
+app.frame('/share', (c) => {
+  // Get and validate background
+  const encodedBg = c.req.query('bg');
+  let backgroundImage = encodedBg ? decodeURIComponent(encodedBg) : backgroundImages[0];
+  
+  if (!backgroundImages.includes(backgroundImage)) {
+    console.warn('Invalid background:', backgroundImage);
+    backgroundImage = backgroundImages[0];
+  }
+
+  // Get all other parameters
   const username = c.req.query('username') || 'Unknown';
   const fid = c.req.query('fid');
   const rank = c.req.query('rank') || 'N/A';
@@ -353,12 +362,18 @@ app.frame('/share', async (c) => {
   const totalTippedToday = c.req.query('totalTippedToday') || '0.00';
   const floatyBalance = c.req.query('floatyBalance') || '0 🦄';
   const percentTipped = c.req.query('percentTipped') || '0.00';
-  const backgroundImage = c.req.query('bg') || backgroundImages[0];
 
   console.log('Share Route Data:', {
-    username, fid, rank, totalHam, hamScore, 
-    todaysAllocation, totalTippedToday, floatyBalance, 
-    percentTipped, backgroundImage
+    backgroundImage,
+    username,
+    fid,
+    rank,
+    totalHam,
+    hamScore,
+    todaysAllocation,
+    totalTippedToday,
+    floatyBalance,
+    percentTipped
   });
 
   return c.res({
