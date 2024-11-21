@@ -232,8 +232,8 @@ app.frame('/check', async (c) => {
       getFloatyBalance(fid.toString())
     ]);
 
+    // Format all the data
     const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || displayName || 'Unknown';
-    const userFid = hamUserData?.casterToken?.user?.fid || fid;
     const rank = hamUserData?.rank ?? 'N/A';
     const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
     const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
@@ -245,21 +245,11 @@ app.frame('/check', async (c) => {
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
     const backgroundImage = getRandomBackground();
 
-    // Construct share URL with all data
-    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
-    shareUrl.searchParams.append('fid', fid.toString());
-    shareUrl.searchParams.append('username', username);
-    shareUrl.searchParams.append('rank', rank.toString());
-    shareUrl.searchParams.append('totalHam', totalHam);
-    shareUrl.searchParams.append('hamScore', hamScore);
-    shareUrl.searchParams.append('todaysAllocation', todaysAllocation);
-    shareUrl.searchParams.append('totalTippedToday', totalTippedToday);
-    shareUrl.searchParams.append('floatyBalance', floatyBalanceValue);
-    shareUrl.searchParams.append('percentTipped', percentTipped);
-    shareUrl.searchParams.append('bg', backgroundImage);
+    // Create share URL with all parameters directly
+    const shareUrl = `https://hamtipstats.vercel.app/api/share?bg=${encodeURIComponent(backgroundImage)}&fid=${fid}&username=${encodeURIComponent(username)}&rank=${rank}&totalHam=${totalHam}&hamScore=${hamScore}&todaysAllocation=${todaysAllocation}&totalTippedToday=${totalTippedToday}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${percentTipped}`;
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
 
     return c.res({
       image: (
@@ -272,12 +262,13 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
+          position: 'relative',
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
               <span style={{fontSize: '76px',}}>@{username}</span>
-              <span style={{fontSize: '38px',}}>FID: {userFid} | Rank: {rank}</span>
+              <span style={{fontSize: '38px',}}>FID: {fid} | Rank: {rank}</span>
             </div>
           </div>
           
@@ -343,24 +334,16 @@ app.frame('/check', async (c) => {
 });
 
 app.frame('/share', (c) => {
-  // Get and validate background
-  const encodedBg = c.req.query('bg');
-  let backgroundImage = encodedBg ? decodeURIComponent(encodedBg) : backgroundImages[0];
-  
-  if (!backgroundImages.includes(backgroundImage)) {
-    console.warn('Invalid background:', backgroundImage);
-    backgroundImage = backgroundImages[0];
-  }
-
-  // Get all other parameters
-  const username = c.req.query('username') || 'Unknown';
+  // Get all parameters directly from query
+  const backgroundImage = decodeURIComponent(c.req.query('bg') || backgroundImages[0]);
+  const username = decodeURIComponent(c.req.query('username') || 'Unknown');
   const fid = c.req.query('fid');
   const rank = c.req.query('rank') || 'N/A';
   const totalHam = c.req.query('totalHam') || '0.00';
   const hamScore = c.req.query('hamScore') || '0.00';
   const todaysAllocation = c.req.query('todaysAllocation') || '0.00';
   const totalTippedToday = c.req.query('totalTippedToday') || '0.00';
-  const floatyBalance = c.req.query('floatyBalance') || '0 🦄';
+  const floatyBalance = decodeURIComponent(c.req.query('floatyBalance') || '0 🦄');
   const percentTipped = c.req.query('percentTipped') || '0.00';
 
   console.log('Share Route Data:', {
