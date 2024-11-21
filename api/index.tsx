@@ -243,10 +243,12 @@ app.frame('/check', async (c) => {
     
     const backgroundImage = getRandomBackground();
     
-    // Construct share text and URL directly
-    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats ��� . Frame by @goldie`;
-    
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=https://hamtipstats.vercel.app/api/share?bg=${encodeURIComponent(backgroundImage)}&fid=${fid}&username=${encodeURIComponent(username)}&rank=${rank}&totalHam=${encodeURIComponent(totalHam)}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${encodeURIComponent(percentTipped)}`;
+    // Construct share URL in a more readable way
+    const baseShareUrl = `https://hamtipstats.vercel.app/api/share`;
+    const fullShareUrl = `${baseShareUrl}?bg=${encodeURIComponent(backgroundImage)}&fid=${encodeURIComponent(fid)}&username=${encodeURIComponent(username)}&rank=${encodeURIComponent(rank)}&totalHam=${encodeURIComponent(totalHam)}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${encodeURIComponent(percentTipped)}`;
+
+    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(fullShareUrl)}`;
 
     return c.res({
       image: (
