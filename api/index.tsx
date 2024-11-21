@@ -343,151 +343,10 @@ app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
   const backgroundImage = c.req.query('bg') || backgroundImages[0];
   
-  console.log('Debug - Share Route:', {
-    fid,
-    backgroundImage,
-  });
+  console.log('Share Route Debug - Initial params:', { fid, backgroundImage });
 
   if (!fid) {
-    console.error('No FID provided');
-    return c.res({
-      image: (
-        <div style={{ 
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontFamily: '"Finger Paint", cursive'
-        }}>
-          <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: No FID provided</h1>
-        </div>
-      ),
-      intents: [
-        <Button action="/check">Check Your Stats</Button>
-      ]
-    });
-  }
-
-  try {
-    console.log('Fetching data for:', {
-      hamUrl: `${HAM_API_URL}/${fid}`,
-      floatyUrl: `${FLOATY_API_URL}/${fid}`,
-    });
-
-    const [hamUserData, floatyBalance] = await Promise.all([
-      getHamUserData(fid.toString()),
-      getFloatyBalance(fid.toString())
-    ]);
-
-    console.log('Raw data received:', {
-      hamUserData,
-      floatyBalance,
-    });
-
-    // Ensure all values are properly formatted with fallbacks
-    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || 'Unknown';
-    const userFid = hamUserData?.casterToken?.user?.fid || fid;
-    const rank = hamUserData?.rank ?? 'N/A';
-    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
-    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
-    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
-    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
-    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
-      ? `${floatyBalance.balances[0].total} 🦄`
-      : '0 🦄';
-    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
-
-    console.log('Share route - Formatted values:', {
-      username,
-      userFid,
-      rank,
-      totalHam,
-      hamScore,
-      todaysAllocation,
-      totalTippedToday,
-      floatyBalanceValue,
-      percentTipped
-    });
-
-    return c.res({
-      image: (
-        <div style={{ 
-          backgroundImage: `url(${backgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '20px',
-          color: 'white',
-          fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive',
-          position: 'relative', // Add this
-          zIndex: '1', // Add this
-        }}>
-          {/* Add an overlay to ensure text visibility */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.1)', // Subtle overlay
-            zIndex: '-1',
-          }} />
-          
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-            <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '76px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>@{username}</span>
-              <span style={{fontSize: '38px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>FID: {userFid} | Rank: {rank}</span>
-            </div>
-          </div>
-          
-          <div style={{
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'flex-start', 
-            marginTop: '20px', 
-            fontSize: '38px',
-            width: '100%',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.5)', // Add shadow to all text
-          }}>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Total $HAM:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>HAM Score:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{hamScore}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Today's Allocation:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{todaysAllocation}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Total Tipped Today:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalTippedToday}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Floaty Balance:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{floatyBalanceValue}</span>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
-              <span>Percent Tipped:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
-            </div>
-          </div>
-        </div>
-      ),
-      intents: [
-        <Button action="/check">Check Your Stats</Button>
-      ]
-    });
-  } catch (error) {
-    console.error('Share route - Error:', error);
+    console.error('Share Route - No FID provided');
     return c.res({
       image: (
         <div style={{
@@ -501,11 +360,131 @@ app.frame('/share', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive',
+          fontFamily: '"Finger Paint", cursive', // Add this line
         }}>
-          <div>Stats temporarily unavailable. Please try again later.</div>
+          <div>No FID provided. Please try again.</div>
         </div>
       ),
+      intents: [
+        <Button action="/check">Try Again</Button>
+      ],
+    });
+  }
+
+  try {
+    // Force string conversion and trim any whitespace
+    const cleanFid = fid.toString().trim();
+    console.log('Share Route - Cleaned FID:', cleanFid);
+
+    // Make the API calls in sequence to ensure proper data fetching
+    const hamUserData = await getHamUserData(cleanFid);
+    console.log('Share Route - HAM Data:', hamUserData);
+
+    const floatyBalance = await getFloatyBalance(cleanFid);
+    console.log('Share Route - Floaty Data:', floatyBalance);
+
+    // Get username with retries if needed
+    let username = hamUserData?.casterToken?.user?.username;
+    if (!username) {
+      username = await getAirstackUserDetails(cleanFid) || 'Unknown';
+    }
+
+    // Format all values exactly as they appear in the text
+    const formattedData = {
+      username,
+      userFid: hamUserData?.casterToken?.user?.fid || cleanFid,
+      rank: hamUserData?.rank ?? 'N/A',
+      totalHam: hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00',
+      hamScore: hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00',
+      todaysAllocation: hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00',
+      totalTippedToday: hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00',
+      floatyBalanceValue: floatyBalance?.balances?.[0]?.total != null 
+        ? `${floatyBalance.balances[0].total} 🦄`
+        : '0 🦄',
+      percentTipped: hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00'
+    };
+
+    console.log('Share Route - Formatted Data:', formattedData);
+
+    return c.res({
+      image: (
+        <div style={{ 
+          backgroundImage: `url(${backgroundImage})`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '20px',
+          color: 'white',
+          fontWeight: 'bold',
+          fontFamily: '"Finger Paint", cursive',
+          position: 'relative',
+        }}>
+          {/* Add a semi-transparent overlay to ensure text visibility */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.1)',
+            zIndex: 0,
+          }} />
+          
+          <div style={{
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+          }}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+              <div style={{display: 'flex', flexDirection: 'column'}}>
+                <span style={{fontSize: '76px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>@{formattedData.username}</span>
+                <span style={{fontSize: '38px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>
+                  FID: {formattedData.userFid} | Rank: {formattedData.rank}
+                </span>
+              </div>
+            </div>
+            
+            <div style={{
+              display: 'flex', 
+              flexDirection: 'column', 
+              marginTop: '20px', 
+              fontSize: '38px',
+              flex: 1,
+            }}>
+              {[
+                ['Total $HAM:', formattedData.totalHam],
+                ['HAM Score:', formattedData.hamScore],
+                ['Today\'s Allocation:', formattedData.todaysAllocation],
+                ['Total Tipped Today:', formattedData.totalTippedToday],
+                ['Floaty Balance:', formattedData.floatyBalanceValue],
+                ['Percent Tipped:', `${formattedData.percentTipped}%`],
+              ].map(([label, value]) => (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  marginBottom: '10px',
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                }}>
+                  <span>{label}</span>
+                  <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ),
+      intents: [
+        <Button action="/check">Check Your Stats</Button>
+      ]
+    });
+  } catch (error) {
+    console.error('Share Route - Error:', error);
+    return c.res({
+      image: errorBackgroundImage,
       intents: [
         <Button action="/check">Try Again</Button>
       ]
