@@ -253,7 +253,7 @@ app.frame('/check', async (c) => {
     // Construct the share URL as a Farcaster frame
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', fid.toString());
-    shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
+    shareUrl.searchParams.append('bg', backgroundImage);
     
     // Construct the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
@@ -341,19 +341,15 @@ app.frame('/check', async (c) => {
 
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
-  let backgroundImage = decodeURIComponent(c.req.query('bg') || '');
+  const backgroundImage = c.req.query('bg') || backgroundImages[0];
   
-  // Fallback to a default background if there's any issue with the URL
-  if (!backgroundImage || !backgroundImage.startsWith('http')) {
-    console.warn('Invalid background URL, falling back to default:', backgroundImage);
-    backgroundImage = backgroundImages[0]; // Use the first background as default
-  }
-
-  console.log('Share route - FID:', fid);
-  console.log('Share route - Background:', backgroundImage);
+  console.log('Debug - Share Route:', {
+    fid,
+    backgroundImage,
+  });
 
   if (!fid) {
-    console.error('Share route - No FID provided');
+    console.error('No FID provided');
     return c.res({
       image: (
         <div style={{ 
@@ -377,14 +373,20 @@ app.frame('/share', async (c) => {
   }
 
   try {
-    console.log('Share route - Fetching data for FID:', fid);
+    console.log('Fetching data for:', {
+      hamUrl: `${HAM_API_URL}/${fid}`,
+      floatyUrl: `${FLOATY_API_URL}/${fid}`,
+    });
+
     const [hamUserData, floatyBalance] = await Promise.all([
       getHamUserData(fid.toString()),
       getFloatyBalance(fid.toString())
     ]);
-    
-    console.log('Share route - HAM data:', hamUserData);
-    console.log('Share route - Floaty data:', floatyBalance);
+
+    console.log('Raw data received:', {
+      hamUserData,
+      floatyBalance,
+    });
 
     // Ensure all values are properly formatted with fallbacks
     const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || 'Unknown';
