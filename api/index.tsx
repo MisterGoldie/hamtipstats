@@ -242,20 +242,11 @@ app.frame('/check', async (c) => {
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
     
     const backgroundImage = getRandomBackground();
-    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
-    shareUrl.searchParams.set('bg', encodeURIComponent(backgroundImage));
-    shareUrl.searchParams.set('fid', fid.toString());
-    shareUrl.searchParams.set('username', encodeURIComponent(username));
-    shareUrl.searchParams.set('rank', rank.toString());
-    shareUrl.searchParams.set('totalHam', encodeURIComponent(totalHam));
-    shareUrl.searchParams.set('hamScore', encodeURIComponent(hamScore));
-    shareUrl.searchParams.set('todaysAllocation', encodeURIComponent(todaysAllocation));
-    shareUrl.searchParams.set('totalTippedToday', encodeURIComponent(totalTippedToday));
-    shareUrl.searchParams.set('floatyBalance', encodeURIComponent(floatyBalanceValue));
-    shareUrl.searchParams.set('percentTipped', encodeURIComponent(percentTipped));
-
-    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
+    
+    // Construct share text and URL directly
+    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats ��� . Frame by @goldie`;
+    
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=https://hamtipstats.vercel.app/api/share?bg=${encodeURIComponent(backgroundImage)}&fid=${fid}&username=${encodeURIComponent(username)}&rank=${rank}&totalHam=${encodeURIComponent(totalHam)}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${encodeURIComponent(percentTipped)}`;
 
     return c.res({
       image: (
