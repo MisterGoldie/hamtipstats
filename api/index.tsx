@@ -355,7 +355,7 @@ app.frame('/share', async (c) => {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          fontFamily: 'Arial, sans-serif'
+          fontFamily: '"Finger Paint", cursive'
         }}>
           <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: No FID provided</h1>
         </div>
@@ -368,11 +368,12 @@ app.frame('/share', async (c) => {
 
   try {
     const [hamUserData, floatyBalance] = await Promise.all([
-      getHamUserData(fid),
-      getFloatyBalance(fid)
+      getHamUserData(fid.toString()),
+      getFloatyBalance(fid.toString())
     ]);
 
-    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid) || 'Unknown';
+    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || 'Unknown';
+    const userFid = hamUserData?.casterToken?.user?.fid || fid;
     const rank = hamUserData?.rank ?? 'N/A';
     const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
     const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
@@ -394,16 +395,16 @@ app.frame('/share', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px',}}>@{username}</span>
-              <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {rank}</span>
+              <span style={{fontSize: '76px',}}>@{username}</span>
+              <span style={{fontSize: '38px',}}>FID: {userFid} | Rank: {rank}</span>
             </div>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '40px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
               <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
@@ -429,9 +430,6 @@ app.frame('/share', async (c) => {
               <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
             </div>
           </div>
-          
-          <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
-          </div>
         </div>
       ),
       intents: [
@@ -453,7 +451,7 @@ app.frame('/share', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
