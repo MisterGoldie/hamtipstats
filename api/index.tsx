@@ -55,8 +55,8 @@ export const app = new Frog({
   }
 }).use(
   neynar({
-    apiKey: 'NEYNAR_FROG_FM',
-    features: ['interactor', 'cast'],
+    apiKey: process.env.NEYNAR_API_KEY || 'NEYNAR_FROG_FM',
+    features: ['interactor', 'cast']
   })
 );
 
