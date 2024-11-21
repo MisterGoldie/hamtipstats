@@ -341,18 +341,23 @@ app.frame('/check', async (c) => {
 
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
-  const backgroundImage = decodeURIComponent(c.req.query('bg') || backgroundImages[0]);
+  let backgroundImage = decodeURIComponent(c.req.query('bg') || '');
+  
+  // Verify if the background is one of our valid backgrounds
+  const isValidBackground = [...backgroundImages, errorBackgroundImage].includes(backgroundImage);
+  
+  // If not valid, use the first background
+  if (!isValidBackground) {
+    console.warn('Invalid background detected:', backgroundImage);
+    backgroundImage = backgroundImages[0];
+  }
   
   console.log('Share Route Debug:', {
     fid,
     backgroundImage,
+    isValidBackground,
     rawBg: c.req.query('bg')
   });
-
-  // Validate the background URL
-  const validBackgroundImage = backgroundImage.startsWith('http') 
-    ? backgroundImage 
-    : backgroundImages[0];
 
   try {
     const cleanFid = fid?.toString().trim();
@@ -364,6 +369,11 @@ app.frame('/share', async (c) => {
       getHamUserData(cleanFid),
       getFloatyBalance(cleanFid)
     ]);
+
+    console.log('API Response Data:', {
+      hamUserData,
+      floatyBalance
+    });
 
     // Get username with retries if needed
     let username = hamUserData?.casterToken?.user?.username;
@@ -391,7 +401,7 @@ app.frame('/share', async (c) => {
     return c.res({
       image: (
         <div style={{ 
-          backgroundImage: `url('${validBackgroundImage}')`,
+          backgroundImage: `url('${backgroundImage}')`,
           width: '1200px',
           height: '628px',
           display: 'flex',
@@ -404,20 +414,21 @@ app.frame('/share', async (c) => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}>
-          {/* Add a semi-transparent overlay to ensure text visibility */}
+          {/* Add semi-transparent overlay */}
           <div style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.1)',
-            zIndex: 0,
+            backgroundColor: 'rgba(0,0,0,0.2)', // Slightly darker overlay
+            zIndex: 1,
           }} />
           
+          {/* Content div with higher z-index */}
           <div style={{
             position: 'relative',
-            zIndex: 1,
+            zIndex: 2,
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
