@@ -253,7 +253,15 @@ app.frame('/check', async (c) => {
     // Construct the share URL as a Farcaster frame
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', fid.toString());
-    shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
+    shareUrl.searchParams.append('bg', backgroundImage);
+    shareUrl.searchParams.append('totalHam', totalHam);
+    shareUrl.searchParams.append('rank', rank.toString());
+    shareUrl.searchParams.append('hamScore', hamScore);
+    shareUrl.searchParams.append('percentTipped', percentTipped);
+    shareUrl.searchParams.append('todaysAllocation', todaysAllocation);
+    shareUrl.searchParams.append('totalTippedToday', totalTippedToday);
+    shareUrl.searchParams.append('floatyBalance', floatyBalanceValue);
+    shareUrl.searchParams.append('username', username);
     
     // Construct the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
@@ -383,17 +391,15 @@ app.frame('/share', async (c) => {
 
     // Format all values exactly as they appear in the text
     const formattedData = {
-      username,
+      username: c.req.query('username') || username,
       userFid: hamUserData?.casterToken?.user?.fid || cleanFid,
-      rank: hamUserData?.rank ?? 'N/A',
-      totalHam: hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00',
-      hamScore: hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00',
-      todaysAllocation: hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00',
-      totalTippedToday: hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00',
-      floatyBalanceValue: floatyBalance?.balances?.[0]?.total != null 
-        ? `${floatyBalance.balances[0].total} 🦄`
-        : '0 🦄',
-      percentTipped: hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00'
+      rank: c.req.query('rank') || hamUserData?.rank || 'N/A',
+      totalHam: c.req.query('totalHam') || (hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00'),
+      hamScore: c.req.query('hamScore') || (hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00'),
+      todaysAllocation: c.req.query('todaysAllocation') || (hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00'),
+      totalTippedToday: c.req.query('totalTippedToday') || (hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00'),
+      floatyBalanceValue: c.req.query('floatyBalance') || (floatyBalance?.balances?.[0]?.total != null ? `${floatyBalance.balances[0].total} 🦄` : '0 🦄'),
+      percentTipped: c.req.query('percentTipped') || (hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00')
     };
 
     console.log('Share Route - Formatted Data:', formattedData);
