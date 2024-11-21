@@ -243,13 +243,26 @@ app.frame('/check', async (c) => {
       ? `${floatyBalance.balances[0].total} 🦄`
       : '0 🦄';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
+    
     const backgroundImage = getRandomBackground();
-
-    // Create share URL with all parameters directly
-    const shareUrl = `https://hamtipstats.vercel.app/api/share?bg=${encodeURIComponent(backgroundImage)}&fid=${fid}&username=${encodeURIComponent(username)}&rank=${rank}&totalHam=${totalHam}&hamScore=${hamScore}&todaysAllocation=${todaysAllocation}&totalTippedToday=${totalTippedToday}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${percentTipped}`;
+    // Create share URL with properly encoded parameters
+    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
+    // Properly encode the entire background URL including spaces
+    const encodedBg = encodeURIComponent(backgroundImage);
+    shareUrl.searchParams.set('bg', encodedBg);
+    // Add remaining params
+    shareUrl.searchParams.set('fid', fid.toString());
+    shareUrl.searchParams.set('username', encodeURIComponent(username));
+    shareUrl.searchParams.set('rank', rank.toString());
+    shareUrl.searchParams.set('totalHam', totalHam);
+    shareUrl.searchParams.set('hamScore', hamScore);
+    shareUrl.searchParams.set('todaysAllocation', todaysAllocation);
+    shareUrl.searchParams.set('totalTippedToday', totalTippedToday);
+    shareUrl.searchParams.set('floatyBalance', encodeURIComponent(floatyBalanceValue));
+    shareUrl.searchParams.set('percentTipped', percentTipped);
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
 
     return c.res({
       image: (
@@ -334,16 +347,45 @@ app.frame('/check', async (c) => {
 });
 
 app.frame('/share', (c) => {
-  // Get all parameters directly from query
-  const backgroundImage = decodeURIComponent(c.req.query('bg') || backgroundImages[0]);
-  const username = decodeURIComponent(c.req.query('username') || 'Unknown');
+  // Get and validate background image
+  const encodedBg = c.req.query('bg');
+  let backgroundImage;
+  try {
+    backgroundImage = decodeURIComponent(encodedBg || '');
+  } catch (e) {
+    console.error('Failed to decode background URL:', e);
+    backgroundImage = backgroundImages[0];
+  }
+
+  // Validate the decoded URL
+  const validBackgrounds = [...backgroundImages];
+  if (!validBackgrounds.includes(backgroundImage)) {
+    console.warn('Invalid background:', backgroundImage);
+    backgroundImage = backgroundImages[0];
+  }
+
+  // Get and decode other parameters
+  let username;
+  try {
+    username = decodeURIComponent(c.req.query('username') || 'Unknown');
+  } catch (e) {
+    username = 'Unknown';
+  }
+
   const fid = c.req.query('fid');
   const rank = c.req.query('rank') || 'N/A';
   const totalHam = c.req.query('totalHam') || '0.00';
   const hamScore = c.req.query('hamScore') || '0.00';
   const todaysAllocation = c.req.query('todaysAllocation') || '0.00';
   const totalTippedToday = c.req.query('totalTippedToday') || '0.00';
-  const floatyBalance = decodeURIComponent(c.req.query('floatyBalance') || '0 🦄');
+  
+  let floatyBalance;
+  try {
+    floatyBalance = decodeURIComponent(c.req.query('floatyBalance') || '0 🦄');
+  } catch (e) {
+    floatyBalance = '0 🦄';
+  }
+  
   const percentTipped = c.req.query('percentTipped') || '0.00';
 
   console.log('Share Route Data:', {
