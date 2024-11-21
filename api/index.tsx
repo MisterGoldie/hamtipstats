@@ -243,12 +243,12 @@ app.frame('/check', async (c) => {
     
     const backgroundImage = getRandomBackground();
     
-    // Construct share URL in a more readable way
-    const baseShareUrl = `https://hamtipstats.vercel.app/api/share`;
-    const fullShareUrl = `${baseShareUrl}?bg=${encodeURIComponent(backgroundImage)}&fid=${encodeURIComponent(fid)}&username=${encodeURIComponent(username)}&rank=${encodeURIComponent(rank)}&totalHam=${encodeURIComponent(totalHam)}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${encodeURIComponent(percentTipped)}`;
-
-    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(fullShareUrl)}`;
+    // Construct the share URL as a Farcaster frame
+    const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
+    shareUrl.searchParams.append('fid', fid.toString());
+    shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
+    // Construct the Farcaster share URL
+    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent('Check out my HamTipStats!')}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
 
     return c.res({
       image: (
