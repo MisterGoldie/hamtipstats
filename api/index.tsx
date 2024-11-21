@@ -341,9 +341,19 @@ app.frame('/check', async (c) => {
 
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
-  const backgroundImage = decodeURIComponent(c.req.query('bg') || '');
+  let backgroundImage = decodeURIComponent(c.req.query('bg') || '');
+  
+  // Fallback to a default background if there's any issue with the URL
+  if (!backgroundImage || !backgroundImage.startsWith('http')) {
+    console.warn('Invalid background URL, falling back to default:', backgroundImage);
+    backgroundImage = backgroundImages[0]; // Use the first background as default
+  }
+
+  console.log('Share route - FID:', fid);
+  console.log('Share route - Background:', backgroundImage);
 
   if (!fid) {
+    console.error('Share route - No FID provided');
     return c.res({
       image: (
         <div style={{ 
@@ -367,11 +377,16 @@ app.frame('/share', async (c) => {
   }
 
   try {
+    console.log('Share route - Fetching data for FID:', fid);
     const [hamUserData, floatyBalance] = await Promise.all([
       getHamUserData(fid.toString()),
       getFloatyBalance(fid.toString())
     ]);
+    
+    console.log('Share route - HAM data:', hamUserData);
+    console.log('Share route - Floaty data:', floatyBalance);
 
+    // Ensure all values are properly formatted with fallbacks
     const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || 'Unknown';
     const userFid = hamUserData?.casterToken?.user?.fid || fid;
     const rank = hamUserData?.rank ?? 'N/A';
@@ -383,6 +398,18 @@ app.frame('/share', async (c) => {
       ? `${floatyBalance.balances[0].total} 🦄`
       : '0 🦄';
     const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
+
+    console.log('Share route - Formatted values:', {
+      username,
+      userFid,
+      rank,
+      totalHam,
+      hamScore,
+      todaysAllocation,
+      totalTippedToday,
+      floatyBalanceValue,
+      percentTipped
+    });
 
     return c.res({
       image: (
@@ -396,15 +423,36 @@ app.frame('/share', async (c) => {
           color: 'white',
           fontWeight: 'bold',
           fontFamily: '"Finger Paint", cursive',
+          position: 'relative', // Add this
+          zIndex: '1', // Add this
         }}>
+          {/* Add an overlay to ensure text visibility */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.1)', // Subtle overlay
+            zIndex: '-1',
+          }} />
+          
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '76px',}}>@{username}</span>
-              <span style={{fontSize: '38px',}}>FID: {userFid} | Rank: {rank}</span>
+              <span style={{fontSize: '76px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>@{username}</span>
+              <span style={{fontSize: '38px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>FID: {userFid} | Rank: {rank}</span>
             </div>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
+          <div style={{
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'flex-start', 
+            marginTop: '20px', 
+            fontSize: '38px',
+            width: '100%',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)', // Add shadow to all text
+          }}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
               <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
@@ -437,7 +485,7 @@ app.frame('/share', async (c) => {
       ]
     });
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Share route - Error:', error);
     return c.res({
       image: (
         <div style={{
