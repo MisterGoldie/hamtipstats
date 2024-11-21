@@ -169,6 +169,12 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance | null> {
   }
 }
 
+// First, let's ensure background validation is consistent
+const validateBackground = (bg: string): string => {
+  const validBackgrounds = [...backgroundImages, errorBackgroundImage];
+  return validBackgrounds.includes(bg) ? bg : backgroundImages[0];
+};
+
 app.frame('/', () => {
   const gifUrl = 'https://bafybeihtvzswbyb6gdyh32tofvvw6z72f5qvqfnfei6ir3kqx5426xwo7q.ipfs.w3s.link/IMG_8059.GIF'
   const baseUrl = 'https://hamtipstats.vercel.app'
@@ -216,7 +222,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div>Unable to retrieve user information: No FID provided</div>
         </div>
@@ -249,27 +255,27 @@ app.frame('/check', async (c) => {
 
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
     const backgroundImage = getRandomBackground();
+    const validatedBackground = validateBackground(backgroundImage);
     
-    // Construct the share URL as a Farcaster frame
+    // Construct the share URL with all necessary data
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', fid.toString());
-    shareUrl.searchParams.append('bg', backgroundImage);
-    shareUrl.searchParams.append('totalHam', totalHam);
+    shareUrl.searchParams.append('bg', encodeURIComponent(validatedBackground));
+    shareUrl.searchParams.append('username', username);
     shareUrl.searchParams.append('rank', rank.toString());
+    shareUrl.searchParams.append('totalHam', totalHam);
     shareUrl.searchParams.append('hamScore', hamScore);
-    shareUrl.searchParams.append('percentTipped', percentTipped);
     shareUrl.searchParams.append('todaysAllocation', todaysAllocation);
     shareUrl.searchParams.append('totalTippedToday', totalTippedToday);
     shareUrl.searchParams.append('floatyBalance', floatyBalanceValue);
-    shareUrl.searchParams.append('username', username);
+    shareUrl.searchParams.append('percentTipped', percentTipped);
     
-    // Construct the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
 
     return c.res({
       image: (
         <div style={{
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url(${validatedBackground})`,
           width: '1200px',
           height: '628px',
           display: 'flex',
@@ -277,7 +283,7 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -335,7 +341,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
@@ -349,22 +355,12 @@ app.frame('/check', async (c) => {
 
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
-  let backgroundImage = decodeURIComponent(c.req.query('bg') || '');
-  
-  // Verify if the background is one of our valid backgrounds
-  const isValidBackground = [...backgroundImages, errorBackgroundImage].includes(backgroundImage);
-  
-  // If not valid, use the first background
-  if (!isValidBackground) {
-    console.warn('Invalid background detected:', backgroundImage);
-    backgroundImage = backgroundImages[0];
-  }
+  const backgroundImage = validateBackground(decodeURIComponent(c.req.query('bg') || ''));
   
   console.log('Share Route Debug:', {
     fid,
     backgroundImage,
-    isValidBackground,
-    rawBg: c.req.query('bg')
+    params: Object.fromEntries(new URL(c.req.url).searchParams)
   });
 
   try {
@@ -373,41 +369,20 @@ app.frame('/share', async (c) => {
       throw new Error('No FID provided');
     }
 
-    const [hamUserData, floatyBalance] = await Promise.all([
-      getHamUserData(cleanFid),
-      getFloatyBalance(cleanFid)
-    ]);
-
-    console.log('API Response Data:', {
-      hamUserData,
-      floatyBalance
-    });
-
-    // Get username with retries if needed
-    let username = hamUserData?.casterToken?.user?.username;
-    if (!username) {
-      username = await getAirstackUserDetails(cleanFid) || 'Unknown';
-    }
-
-    // Format all values exactly as they appear in the text
-    const formattedData = {
-      username: c.req.query('username') || username,
-      userFid: hamUserData?.casterToken?.user?.fid || cleanFid,
-      rank: c.req.query('rank') || hamUserData?.rank || 'N/A',
-      totalHam: c.req.query('totalHam') || (hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00'),
-      hamScore: c.req.query('hamScore') || (hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00'),
-      todaysAllocation: c.req.query('todaysAllocation') || (hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00'),
-      totalTippedToday: c.req.query('totalTippedToday') || (hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00'),
-      floatyBalanceValue: c.req.query('floatyBalance') || (floatyBalance?.balances?.[0]?.total != null ? `${floatyBalance.balances[0].total} 🦄` : '0 🦄'),
-      percentTipped: c.req.query('percentTipped') || (hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00')
-    };
-
-    console.log('Share Route - Formatted Data:', formattedData);
+    // Use passed parameters first, fall back to API data if needed
+    const username = c.req.query('username') || await getAirstackUserDetails(cleanFid) || 'Unknown';
+    const rank = c.req.query('rank') || 'N/A';
+    const totalHam = c.req.query('totalHam') || '0.00';
+    const hamScore = c.req.query('hamScore') || '0.00';
+    const todaysAllocation = c.req.query('todaysAllocation') || '0.00';
+    const totalTippedToday = c.req.query('totalTippedToday') || '0.00';
+    const floatyBalanceValue = c.req.query('floatyBalance') || '0 🦄';
+    const percentTipped = c.req.query('percentTipped') || '0.00';
 
     return c.res({
       image: (
-        <div style={{ 
-          backgroundImage: `url('${backgroundImage}')`,
+        <div style={{
+          backgroundImage: `url(${backgroundImage})`,
           width: '1200px',
           height: '628px',
           display: 'flex',
@@ -417,21 +392,17 @@ app.frame('/share', async (c) => {
           fontWeight: 'bold',
           fontFamily: '"Finger Paint", cursive',
           position: 'relative',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
         }}>
-          {/* Add semi-transparent overlay */}
           <div style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.2)', // Slightly darker overlay
+            backgroundColor: 'rgba(0,0,0,0.2)',
             zIndex: 1,
           }} />
           
-          {/* Content div with higher z-index */}
           <div style={{
             position: 'relative',
             zIndex: 2,
@@ -441,27 +412,19 @@ app.frame('/share', async (c) => {
           }}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
               <div style={{display: 'flex', flexDirection: 'column'}}>
-                <span style={{fontSize: '76px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>@{formattedData.username}</span>
-                <span style={{fontSize: '38px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>
-                  FID: {formattedData.userFid} | Rank: {formattedData.rank}
-                </span>
+                <span style={{fontSize: '76px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>@{username}</span>
+                <span style={{fontSize: '38px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)'}}>FID: {cleanFid} | Rank: {rank}</span>
               </div>
             </div>
             
-            <div style={{
-              display: 'flex', 
-              flexDirection: 'column', 
-              marginTop: '20px', 
-              fontSize: '38px',
-              flex: 1,
-            }}>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
               {[
-                ['Total $HAM:', formattedData.totalHam],
-                ['HAM Score:', formattedData.hamScore],
-                ['Today\'s Allocation:', formattedData.todaysAllocation],
-                ['Total Tipped Today:', formattedData.totalTippedToday],
-                ['Floaty Balance:', formattedData.floatyBalanceValue],
-                ['Percent Tipped:', `${formattedData.percentTipped}%`],
+                ['Total $HAM:', totalHam],
+                ['HAM Score:', hamScore],
+                ['Today\'s Allocation:', todaysAllocation],
+                ['Total Tipped Today:', totalTippedToday],
+                ['Floaty Balance:', floatyBalanceValue],
+                ['Percent Tipped:', `${percentTipped}%`],
               ].map(([label, value]) => (
                 <div style={{
                   display: 'flex',
@@ -487,7 +450,7 @@ app.frame('/share', async (c) => {
     return c.res({
       image: (
         <div style={{
-          backgroundImage: `url('${errorBackgroundImage}')`,
+          backgroundImage: `url(${errorBackgroundImage})`,
           width: '1200px',
           height: '628px',
           display: 'flex',
@@ -498,8 +461,6 @@ app.frame('/share', async (c) => {
           fontWeight: 'bold',
           textAlign: 'center',
           fontFamily: '"Finger Paint", cursive',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
         }}>
           <div>Error loading stats. Please try again.</div>
         </div>
