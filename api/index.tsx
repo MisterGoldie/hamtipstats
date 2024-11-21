@@ -341,6 +341,13 @@ app.frame('/share', (c) => {
     totalTippedToday = decodeURIComponent(c.req.query('totalTippedToday') || '0.00');
     floatyBalance = decodeURIComponent(c.req.query('floatyBalance') || '0 🦄');
     percentTipped = decodeURIComponent(c.req.query('percentTipped') || '0.00');
+
+    // Ensure consistent number formatting
+    totalHam = Number(totalHam).toFixed(2);
+    hamScore = Number(hamScore).toFixed(2);
+    todaysAllocation = Number(todaysAllocation).toFixed(2);
+    totalTippedToday = Number(totalTippedToday).toFixed(2);
+    percentTipped = Number(percentTipped).toFixed(2);
   } catch (e) {
     console.error('Error decoding parameters:', e);
     username = 'Unknown';
