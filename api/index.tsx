@@ -253,7 +253,7 @@ app.frame('/check', async (c) => {
     // Construct the share URL as a Farcaster frame
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', fid.toString());
-    shareUrl.searchParams.append('bg', backgroundImage);
+    shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
     
     // Construct the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
@@ -341,47 +341,29 @@ app.frame('/check', async (c) => {
 
 app.frame('/share', async (c) => {
   const fid = c.req.query('fid');
-  const backgroundImage = c.req.query('bg') || backgroundImages[0];
+  const backgroundImage = decodeURIComponent(c.req.query('bg') || backgroundImages[0]);
   
-  console.log('Share Route Debug - Initial params:', { fid, backgroundImage });
+  console.log('Share Route Debug:', {
+    fid,
+    backgroundImage,
+    rawBg: c.req.query('bg')
+  });
 
-  if (!fid) {
-    console.error('Share Route - No FID provided');
-    return c.res({
-      image: (
-        <div style={{
-          backgroundImage: `url(${errorBackgroundImage})`,
-          width: '1200px',
-          height: '628px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'white',
-          fontSize: '40px',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive', // Add this line
-        }}>
-          <div>No FID provided. Please try again.</div>
-        </div>
-      ),
-      intents: [
-        <Button action="/check">Try Again</Button>
-      ],
-    });
-  }
+  // Validate the background URL
+  const validBackgroundImage = backgroundImage.startsWith('http') 
+    ? backgroundImage 
+    : backgroundImages[0];
 
   try {
-    // Force string conversion and trim any whitespace
-    const cleanFid = fid.toString().trim();
-    console.log('Share Route - Cleaned FID:', cleanFid);
+    const cleanFid = fid?.toString().trim();
+    if (!cleanFid) {
+      throw new Error('No FID provided');
+    }
 
-    // Make the API calls in sequence to ensure proper data fetching
-    const hamUserData = await getHamUserData(cleanFid);
-    console.log('Share Route - HAM Data:', hamUserData);
-
-    const floatyBalance = await getFloatyBalance(cleanFid);
-    console.log('Share Route - Floaty Data:', floatyBalance);
+    const [hamUserData, floatyBalance] = await Promise.all([
+      getHamUserData(cleanFid),
+      getFloatyBalance(cleanFid)
+    ]);
 
     // Get username with retries if needed
     let username = hamUserData?.casterToken?.user?.username;
@@ -409,7 +391,7 @@ app.frame('/share', async (c) => {
     return c.res({
       image: (
         <div style={{ 
-          backgroundImage: `url(${backgroundImage})`,
+          backgroundImage: `url('${validBackgroundImage}')`,
           width: '1200px',
           height: '628px',
           display: 'flex',
@@ -419,6 +401,8 @@ app.frame('/share', async (c) => {
           fontWeight: 'bold',
           fontFamily: '"Finger Paint", cursive',
           position: 'relative',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}>
           {/* Add a semi-transparent overlay to ensure text visibility */}
           <div style={{
@@ -482,9 +466,27 @@ app.frame('/share', async (c) => {
       ]
     });
   } catch (error) {
-    console.error('Share Route - Error:', error);
+    console.error('Share Route Error:', error);
     return c.res({
-      image: errorBackgroundImage,
+      image: (
+        <div style={{
+          backgroundImage: `url('${errorBackgroundImage}')`,
+          width: '1200px',
+          height: '628px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          fontFamily: '"Finger Paint", cursive',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}>
+          <div>Error loading stats. Please try again.</div>
+        </div>
+      ),
       intents: [
         <Button action="/check">Try Again</Button>
       ]
