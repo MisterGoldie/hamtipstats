@@ -243,13 +243,8 @@ app.frame('/check', async (c) => {
     
     const backgroundImage = getRandomBackground();
     
-    // Construct share URLs
-    const baseShareUrl = `https://hamtipstats.vercel.app/api/share`; 
-    const fullShareUrl = `${baseShareUrl}?bg=${encodeURIComponent(backgroundImage)}&fid=${fid}&username=${encodeURIComponent(username)}&rank=${encodeURIComponent(rank)}&totalHam=${encodeURIComponent(totalHam)}&hamScore=${encodeURIComponent(hamScore)}&todaysAllocation=${encodeURIComponent(todaysAllocation)}&totalTippedToday=${encodeURIComponent(totalTippedToday)}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${encodeURIComponent(percentTipped)}`;
-
     const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
-    const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(fullShareUrl)}`;
-
+    
     return c.res({
       image: (
         <div style={{
@@ -290,7 +285,11 @@ app.frame('/check', async (c) => {
       intents: [
         <Button action="/">Home</Button>,
         <Button action="/check">Refresh</Button>,
-        <Button.Link href={farcasterShareURL}>Share</Button.Link>,
+        <Button.Link 
+          href={`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(`https://hamtipstats.vercel.app/api/share?username=${encodeURIComponent(username)}&rank=${rank}&totalHam=${totalHam}&hamScore=${hamScore}&todaysAllocation=${todaysAllocation}&totalTippedToday=${totalTippedToday}&floatyBalance=${encodeURIComponent(floatyBalanceValue)}&percentTipped=${percentTipped}&fid=${fid}&bg=${encodeURIComponent(backgroundImage)}`)}`}
+        >
+          Share
+        </Button.Link>
       ],
     });
   } catch (error) {
@@ -321,48 +320,43 @@ app.frame('/check', async (c) => {
 });
 
 app.frame('/share', (c) => {
-  // Get and decode all parameters
-  const encodedBg = c.req.query('bg');
-  let backgroundImage;
+  const defaultData = {
+    username: 'Unknown',
+    rank: 'N/A',
+    totalHam: '0.00',
+    hamScore: '0.00',
+    todaysAllocation: '0.00',
+    totalTippedToday: '0.00',
+    floatyBalance: '0 🦄',
+    percentTipped: '0.00',
+    fid: '',
+    bg: backgroundImages[0]
+  };
+
+  let data;
   try {
-    backgroundImage = decodeURIComponent(encodedBg || '');
-    if (!backgroundImages.includes(backgroundImage)) {
-      backgroundImage = backgroundImages[0];
-    }
+    data = c.frameData?.inputText ? 
+      { ...defaultData, ...JSON.parse(c.frameData.inputText) } : 
+      defaultData;
   } catch (e) {
-    backgroundImage = backgroundImages[0];
+    console.error('Error parsing share data:', e);
+    data = defaultData;
   }
 
-  // Decode all other parameters
-  let username, totalHam, hamScore, todaysAllocation, totalTippedToday, floatyBalance, percentTipped;
-  try {
-    username = decodeURIComponent(c.req.query('username') || 'Unknown');
-    totalHam = decodeURIComponent(c.req.query('totalHam') || '0.00');
-    hamScore = decodeURIComponent(c.req.query('hamScore') || '0.00');
-    todaysAllocation = decodeURIComponent(c.req.query('todaysAllocation') || '0.00');
-    totalTippedToday = decodeURIComponent(c.req.query('totalTippedToday') || '0.00');
-    floatyBalance = decodeURIComponent(c.req.query('floatyBalance') || '0 🦄');
-    percentTipped = decodeURIComponent(c.req.query('percentTipped') || '0.00');
+  const {
+    username,
+    rank,
+    totalHam,
+    hamScore,
+    todaysAllocation,
+    totalTippedToday,
+    floatyBalance,
+    percentTipped,
+    fid,
+    bg
+  } = data;
 
-    // Ensure consistent number formatting
-    totalHam = Number(totalHam).toFixed(2);
-    hamScore = Number(hamScore).toFixed(2);
-    todaysAllocation = Number(todaysAllocation).toFixed(2);
-    totalTippedToday = Number(totalTippedToday).toFixed(2);
-    percentTipped = Number(percentTipped).toFixed(2);
-  } catch (e) {
-    console.error('Error decoding parameters:', e);
-    username = 'Unknown';
-    totalHam = '0.00';
-    hamScore = '0.00';
-    todaysAllocation = '0.00';
-    totalTippedToday = '0.00';
-    floatyBalance = '0 🦄';
-    percentTipped = '0.00';
-  }
-
-  const fid = c.req.query('fid');
-  const rank = c.req.query('rank') || 'N/A';
+  const backgroundImage = backgroundImages.includes(bg) ? bg : backgroundImages[0];
 
   return c.res({
     image: (
