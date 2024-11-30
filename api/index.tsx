@@ -62,7 +62,7 @@ export const app = new Frog({
     apiUrl: "https://hubs.airstack.xyz",
     fetchOptions: {
       headers: {
-        "x-airstack-hubs": "103ba30da492d4a7e89e7026a6d3a234e", // Your Airstack API key
+        "x-airstack-hubs": process.env.AIRSTACK_API_KEY || '',
       }
     }
   }
@@ -99,7 +99,7 @@ function formatLargeNumber(strNumber: string): string {
 
 async function getAirstackUserDetails(fid: string) {
   const AIRSTACK_API_URL = 'https://api.airstack.xyz/gql';
-  const AIRSTACK_API_KEY = '103ba30da492d4a7e89e7026a6d3a234e';
+  const AIRSTACK_API_KEY = process.env.AIRSTACK_API_KEY;
 
   const query = `
     query GetFarcasterUserDetails {
@@ -112,12 +112,14 @@ async function getAirstackUserDetails(fid: string) {
   `;
 
   try {
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      'Authorization': AIRSTACK_API_KEY || '',
+    });
+
     const response = await fetch(AIRSTACK_API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': AIRSTACK_API_KEY,
-      },
+      headers: headers,
       body: JSON.stringify({ query }),
     });
 
