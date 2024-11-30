@@ -31,6 +31,19 @@ interface FloatyBalance {
   }>;
 }
 
+// Add return type interface
+interface FormattedStats {
+  username: string;
+  userFid: number;
+  rank: number | string;
+  totalHam: string;
+  hamScore: string;
+  todaysAllocation: string;
+  totalTippedToday: string;
+  floatyBalanceValue: string;
+  percentTipped: string;
+}
+
 export const app = new Frog({
   basePath: '/api',
   imageOptions: {
@@ -167,6 +180,27 @@ async function getFloatyBalance(fid: string): Promise<FloatyBalance | null> {
     console.error('Error in getFloatyBalance:', error);
     return null;
   }
+}
+
+function formatStats(
+  hamUserData: HamUserData | null,
+  floatyBalance: FloatyBalance | null,
+  fid: string | number,
+  username: string | null
+): FormattedStats {
+  return {
+    username: username || 'Unknown',
+    userFid: hamUserData?.casterToken?.user?.fid || Number(fid),
+    rank: hamUserData?.rank ?? 'N/A',
+    totalHam: hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00',
+    hamScore: hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00',
+    todaysAllocation: hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00',
+    totalTippedToday: hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00',
+    floatyBalanceValue: floatyBalance?.balances?.[0]?.total != null 
+      ? `${floatyBalance.balances[0].total} 🦄`
+      : '0 🦄',
+    percentTipped: hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00'
+  };
 }
 
 app.frame('/', () => {
@@ -372,16 +406,8 @@ app.frame('/share', async (c) => {
       getFloatyBalance(fid)
     ]);
 
-    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid) || 'Unknown';
-    const rank = hamUserData?.rank ?? 'N/A';
-    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
-    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
-    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
-    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
-    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
-      ? `${floatyBalance.balances[0].total} 🦄`
-      : '0 🦄';
-    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
+    const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid);
+    const stats = formatStats(hamUserData, floatyBalance, fid, username);
 
     return c.res({
       image: (
@@ -398,35 +424,35 @@ app.frame('/share', async (c) => {
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px',}}>@{username}</span>
-              <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {rank}</span>
+              <span style={{fontSize: '80px',}}>@{stats.username}</span>
+              <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {stats.rank}</span>
             </div>
           </div>
           
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '40px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.totalHam}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>HAM Score:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{hamScore}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.hamScore}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Today's Allocation:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{todaysAllocation}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.todaysAllocation}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total Tipped Today:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalTippedToday}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.totalTippedToday}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Floaty Balance:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{floatyBalanceValue}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.floatyBalanceValue}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Percent Tipped:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.percentTipped}%</span>
             </div>
           </div>
           
