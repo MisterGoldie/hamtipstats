@@ -287,6 +287,7 @@ app.frame('/check', async (c) => {
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', fid.toString());
     shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
+    shareUrl.searchParams.append('t', Date.now().toString());
     
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
 
