@@ -252,7 +252,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div>Unable to retrieve user information: No FID provided</div>
         </div>
@@ -272,26 +272,15 @@ app.frame('/check', async (c) => {
     console.log('Floaty Balance:', floatyBalance);
 
     const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid.toString()) || displayName || 'Unknown';
-    const userFid = hamUserData?.casterToken?.user?.fid || fid;
-    const rank = hamUserData?.rank ?? 'N/A';
-    const totalHam = hamUserData?.balance?.ham ? formatLargeNumber(hamUserData.balance.ham) : '0.00';
-    const hamScore = hamUserData?.hamScore != null ? hamUserData.hamScore.toFixed(2) : '0.00';
-    const todaysAllocation = hamUserData?.todaysAllocation ? formatLargeNumber(hamUserData.todaysAllocation) : '0.00';
-    const totalTippedToday = hamUserData?.totalTippedToday ? formatLargeNumber(hamUserData.totalTippedToday) : '0.00';
-    const floatyBalanceValue = floatyBalance?.balances?.[0]?.total != null 
-      ? `${floatyBalance.balances[0].total} 🦄`
-      : '0 🦄';
-    const percentTipped = hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00';
-
-    const shareText = `I have ${totalHam} $HAM with a rank of ${rank}! My HAM Score is ${hamScore} and I've tipped ${percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
+    const stats = formatStats(hamUserData, floatyBalance, fid, username);
+    
+    const shareText = `I have ${stats.totalHam} $HAM with a rank of ${stats.rank}! My HAM Score is ${stats.hamScore} and I've tipped ${stats.percentTipped}% today. Check your /lp stats 🍖 . Frame by @goldie`;
     const backgroundImage = getRandomBackground();
     
-    // Construct the share URL as a Farcaster frame
     const shareUrl = new URL('https://hamtipstats.vercel.app/api/share');
     shareUrl.searchParams.append('fid', fid.toString());
     shareUrl.searchParams.append('bg', encodeURIComponent(backgroundImage));
     
-    // Construct the Farcaster share URL
     const farcasterShareURL = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl.toString())}`;
 
     return c.res({
@@ -305,39 +294,39 @@ app.frame('/check', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '76px',}}>@{username}</span>
-              <span style={{fontSize: '38px',}}>FID: {userFid} | Rank: {rank}</span>
+              <span style={{fontSize: '76px',}}>@{stats.username}</span>
+              <span style={{fontSize: '38px',}}>FID: {stats.userFid} | Rank: {stats.rank}</span>
             </div>
           </div>
           
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalHam}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.totalHam}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>HAM Score:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{hamScore}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.hamScore}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Today's Allocation:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{todaysAllocation}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.todaysAllocation}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total Tipped Today:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{totalTippedToday}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.totalTippedToday}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Floaty Balance:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{floatyBalanceValue}</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.floatyBalanceValue}</span>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Percent Tipped:</span>
-              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{percentTipped}%</span>
+              <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.percentTipped}%</span>
             </div>
           </div>
         </div>
@@ -363,7 +352,7 @@ app.frame('/check', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
