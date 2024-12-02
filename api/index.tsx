@@ -93,8 +93,12 @@ function getRandomBackground(): string {
 }
 
 function formatLargeNumber(strNumber: string): string {
+  console.log('Input string number:', strNumber);
   const number = Number(strNumber) / 1e18;
-  return number.toFixed(2);
+  console.log('Calculated number:', number);
+  const formatted = number.toFixed(2);
+  console.log('Formatted result:', formatted);
+  return formatted;
 }
 
 async function getAirstackUserDetails(fid: string) {
@@ -190,7 +194,7 @@ function formatStats(
   fid: string | number,
   username: string | null
 ): FormattedStats {
-  return {
+  const stats = {
     username: username || 'Unknown',
     userFid: hamUserData?.casterToken?.user?.fid || Number(fid),
     rank: hamUserData?.rank ?? 'N/A',
@@ -203,6 +207,9 @@ function formatStats(
       : '0 🦄',
     percentTipped: hamUserData?.percentTipped != null ? (hamUserData.percentTipped * 100).toFixed(2) : '0.00'
   };
+  
+  console.log('Formatted stats:', stats);
+  return stats;
 }
 
 app.frame('/', () => {
@@ -397,8 +404,15 @@ app.frame('/share', async (c) => {
       getFloatyBalance(fid)
     ]);
 
+    console.log('Raw HAM data:', {
+      balance: hamUserData?.balance?.ham,
+      totalTipped: hamUserData?.totalTippedToday,
+      percent: hamUserData?.percentTipped
+    });
+
     const username = hamUserData?.casterToken?.user?.username || await getAirstackUserDetails(fid);
     const stats = formatStats(hamUserData, floatyBalance, fid, username);
+    console.log('Final formatted stats for rendering:', stats);
 
     return c.res({
       image: (
