@@ -391,7 +391,7 @@ app.frame('/share', async (c) => {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
-          fontFamily: 'Arial, sans-serif'
+          fontFamily: '"Finger Paint", cursive'
         }}>
           <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>Error: No FID provided</h1>
         </div>
@@ -422,16 +422,16 @@ app.frame('/share', async (c) => {
           padding: '20px',
           color: 'white',
           fontWeight: 'bold',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
             <div style={{display: 'flex', flexDirection: 'column'}}>
-              <span style={{fontSize: '80px',}}>@{stats.username}</span>
-              <span style={{fontSize: '30px',}}>FID: {fid} | Rank: {stats.rank}</span>
+              <span style={{fontSize: '76px',}}>@{stats.username}</span>
+              <span style={{fontSize: '38px',}}>FID: {stats.userFid} | Rank: {stats.rank}</span>
             </div>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '40px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', fontSize: '38px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px'}}>
               <span>Total $HAM:</span>
               <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.totalHam}</span>
@@ -457,9 +457,6 @@ app.frame('/share', async (c) => {
               <span style={{fontWeight: '900', minWidth: '200px', textAlign: 'right'}}>{stats.percentTipped}%</span>
             </div>
           </div>
-          
-          <div style={{display: 'flex', fontSize: '24px', alignSelf: 'flex-end', marginTop: 'auto', textShadow: '1px 1px 2px rgba(0,0,0,0.5)'}}>
-          </div>
         </div>
       ),
       intents: [
@@ -481,7 +478,7 @@ app.frame('/share', async (c) => {
           fontSize: '40px',
           fontWeight: 'bold',
           textAlign: 'center',
-          fontFamily: '"Finger Paint", cursive', // Add this line
+          fontFamily: '"Finger Paint", cursive',
         }}>
           <div>Stats temporarily unavailable. Please try again later.</div>
         </div>
